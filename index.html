@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Manager Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen overflow-hidden">
+
+    <div id="app" class="flex h-full">
+
+        <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl">
+            <div class="p-6 border-b border-gray-700">
+                <h1 class="text-xl font-bold tracking-wider"><i class="fa-solid fa-layer-group mr-2"></i>Ad Manager</h1>
+            </div>
+            
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul>
+                    <li @click="selectClient(null)" 
+                        :class="{'bg-blue-600': currentClient === null, 'hover:bg-gray-800': currentClient !== null}"
+                        class="px-6 py-3 cursor-pointer transition-colors flex items-center justify-between">
+                        <span><i class="fa-solid fa-list-check mr-3"></i>全案件タスク一覧</span>
+                        <span class="bg-gray-700 text-xs px-2 py-1 rounded-full">{{ allPendingTasksCount }}</span>
+                    </li>
+
+                    <li class="px-6 py-2 mt-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clients</li>
+
+                    <li v-for="client in clients" :key="client.id" 
+                        @click="selectClient(client)"
+                        :class="{'bg-gray-800 border-l-4 border-blue-500': currentClient && currentClient.id === client.id, 'hover:bg-gray-800 border-l-4 border-transparent': !currentClient || currentClient.id !== client.id}"
+                        class="px-6 py-3 cursor-pointer transition-colors flex justify-between items-center">
+                        <span>{{ client.name }}</span>
+                        <span v-if="getPendingCount(client.id) > 0" class="bg-red-500 text-xs px-2 py-0.5 rounded-full">{{ getPendingCount(client.id) }}</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">
+                v1.0.0 Alpha Build
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-sm z-10 p-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        {{ currentClient ? currentClient.name : '全案件タスク一覧' }}
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ currentClient ? '担当案件のバナー切り替えスケジュール管理' : 'すべてのクライアントの進行状況サマリー' }}
+                    </p>
+                </div>
+                <div>
+                    <button @click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> 新規タスク追加
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-6">
+                
+                <div class="flex space-x-2 mb-6 overflow-x-auto pb-2">
+                    <button @click="filterPlatform = ''" :class="filterPlatform === '' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600'" class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm whitespace-nowrap">全て</button>
+                    <button v-for="pf in platforms" :key="pf" @click="filterPlatform = pf" 
+                        :class="filterPlatform === pf ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-white text-gray-600'"
+                        class="px-4 py-1.5 rounded-full text-sm font-medium border shadow-sm whitespace-nowrap">
+                        {{ pf }}
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div v-for="task in filteredTasks" :key="task.id" class="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 flex flex-col border-t-4"
+                        :class="getPlatformColor(task.platform)">
+                        
+                        <div class="p-5 flex-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-bold uppercase px-2 py-1 rounded bg-gray-100 text-gray-600">{{ task.platform }}</span>
+                                <span :class="task.status === 'Done' ? 'text-green-500' : 'text-orange-500'" class="text-xs font-bold">
+                                    <i :class="task.status === 'Done' ? 'fa-solid fa-check-circle' : 'fa-solid fa-clock'"></i> {{ task.status }}
+                                </span>
+                            </div>
+                            
+                            <div v-if="!currentClient" class="text-xs text-gray-400 mb-1 font-semibold">
+                                <i class="fa-solid fa-building mr-1"></i>{{ getClientName(task.clientId) }}
+                            </div>
+
+                            <h3 class="font-bold text-lg mb-2 leading-tight">{{ task.title }}</h3>
+                            <p class="text-sm text-gray-500 mb-4">{{ task.description }}</p>
+                            
+                            <div class="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                <i class="fa-regular fa-calendar mr-2"></i>
+                                {{ formatDate(task.date) }}
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-5 py-3 border-t flex justify-between items-center">
+                            <button @click="toggleStatus(task)" class="text-xs font-bold text-blue-600 hover:text-blue-800">
+                                ステータス変更
+                            </button>
+                            <button @click="deleteTask(task.id)" class="text-gray-400 hover:text-red-500 transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="filteredTasks.length === 0" class="text-center text-gray-400 py-20">
+                    <i class="fa-solid fa-clipboard-check text-4xl mb-4"></i>
+                    <p>表示するタスクがありません</p>
+                </div>
+            </div>
+        </main>
+
+        <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                <h3 class="text-xl font-bold mb-4">新規切り替えタスク追加</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">クライアント</label>
+                        <select v-model="newTask.clientId" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                            <option v-for="c in clients" :value="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">媒体</label>
+                        <select v-model="newTask.platform" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                            <option v-for="p in platforms" :value="p">{{ p }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">タスク名 (バナー名など)</label>
+                        <input type="text" v-model="newTask.title" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="例: 正月セールバナー開始">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">切り替え予定日</label>
+                        <input type="date" v-model="newTask.date" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button @click="isModalOpen = false" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm">キャンセル</button>
+                    <button @click="addTask" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">追加する</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentClient: null, // nullなら全一覧
+                    filterPlatform: '',
+                    isModalOpen: false,
+                    platforms: ['Google広告', 'YSS', 'YDN', 'LINE', 'meta広告', 'TVer'],
+                    clients: [
+                        { id: 1, name: '株式会社A社様' },
+                        { id: 2, name: 'Bコスメティック' },
+                        { id: 3, name: 'C不動産' },
+                    ],
+                    tasks: [], // LocalStorageから読み込む
+                    newTask: {
+                        clientId: 1,
+                        platform: 'Google広告',
+                        title: '',
+                        description: '',
+                        date: '',
+                        status: 'Scheduled'
+                    }
+                }
+            },
+            computed: {
+                filteredTasks() {
+                    let filtered = this.tasks;
+                    
+                    // クライアントフィルタ
+                    if (this.currentClient) {
+                        filtered = filtered.filter(t => t.clientId === this.currentClient.id);
+                    }
+
+                    // 媒体フィルタ
+                    if (this.filterPlatform) {
+                        filtered = filtered.filter(t => t.platform === this.filterPlatform);
+                    }
+
+                    // 日付順にソート
+                    return filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+                },
+                allPendingTasksCount() {
+                    return this.tasks.filter(t => t.status !== 'Done').length;
+                }
+            },
+            mounted() {
+                // LocalStorageからデータ復元
+                const savedTasks = localStorage.getItem('ad_tasks');
+                if (savedTasks) {
+                    this.tasks = JSON.parse(savedTasks);
+                } else {
+                    // サンプルデータ
+                    this.tasks = [
+                        { id: 1, clientId: 1, platform: 'Google広告', title: '春キャンペーン入稿', date: '2024-04-01', status: 'Scheduled' },
+                        { id: 2, clientId: 1, platform: 'meta広告', title: 'リターゲティング停止', date: '2024-03-31', status: 'Done' },
+                        { id: 3, clientId: 2, platform: 'LINE', title: '新商品バナー開始', date: '2024-04-05', status: 'Scheduled' },
+                    ];
+                }
+            },
+            methods: {
+                selectClient(client) {
+                    this.currentClient = client;
+                },
+                getClientName(id) {
+                    const c = this.clients.find(c => c.id === id);
+                    return c ? c.name : '不明';
+                },
+                getPendingCount(clientId) {
+                    return this.tasks.filter(t => t.clientId === clientId && t.status !== 'Done').length;
+                },
+                getPlatformColor(platform) {
+                    // 媒体ごとのボーダー色
+                    const colors = {
+                        'Google広告': 'border-blue-500',
+                        'YSS': 'border-red-500',
+                        'YDN': 'border-red-400',
+                        'LINE': 'border-green-500',
+                        'meta広告': 'border-indigo-500',
+                        'TVer': 'border-sky-400'
+                    };
+                    return colors[platform] || 'border-gray-300';
+                },
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr);
+                    return `${d.getMonth() + 1}/${d.getDate()} (${['日','月','火','水','木','金','土'][d.getDay()]})`;
+                },
+                openModal() {
+                    // 現在選択中のクライアントがいればそれをデフォルトに
+                    if(this.currentClient) this.newTask.clientId = this.currentClient.id;
+                    this.isModalOpen = true;
+                },
+                addTask() {
+                    if(!this.newTask.title) return;
+                    
+                    const task = {
+                        id: Date.now(),
+                        ...this.newTask,
+                        status: 'Scheduled'
+                    };
+                    this.tasks.push(task);
+                    this.saveData();
+                    this.isModalOpen = false;
+                    
+                    // Reset fields
+                    this.newTask.title = '';
+                    this.newTask.date = '';
+                },
+                toggleStatus(task) {
+                    task.status = task.status === 'Scheduled' ? 'Done' : 'Scheduled';
+                    this.saveData();
+                },
+                deleteTask(id) {
+                    if(confirm('削除しますか？')) {
+                        this.tasks = this.tasks.filter(t => t.id !== id);
+                        this.saveData();
+                    }
+                },
+                saveData() {
+                    localStorage.setItem('ad_tasks', JSON.stringify(this.tasks));
+                }
+            }
+        });
+    </script>
+</body>
+</html>
