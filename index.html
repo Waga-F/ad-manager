@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v6.0 (Dark)</title>
+    <title>Ad Manager Pro v6.1 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -183,9 +183,9 @@
 
                                 <h3 class="font-bold text-slate-100 text-lg mb-2 leading-snug cursor-pointer hover:text-blue-400 transition" @click="editGroup(taskGroup)">{{ taskGroup.title }}</h3>
                                 
-                                <!-- Platform Tags -->
+                                <!-- Platform Tags (Colored) -->
                                 <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span v-for="pf in taskGroup.platforms" :key="pf" class="px-2 py-0.5 rounded text-[10px] bg-slate-700 border border-slate-600 text-slate-300 font-medium">
+                                    <span v-for="pf in taskGroup.platforms" :key="pf" class="px-2 py-0.5 rounded text-[10px] font-medium border" :class="getPlatformColorStyle(pf)">
                                         {{ pf }}
                                     </span>
                                 </div>
@@ -244,7 +244,7 @@
                                     <div class="mb-2">
                                         <div class="flex justify-between items-start mb-1">
                                             <div class="flex flex-wrap gap-1 max-w-[80%]">
-                                                <span v-for="pf in taskGroup.platforms" :key="pf" class="text-[9px] text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
+                                                <span v-for="pf in taskGroup.platforms" :key="pf" class="text-[9px] px-1.5 py-0.5 rounded border" :class="getPlatformColorStyle(pf)">
                                                     {{ pf }}
                                                 </span>
                                             </div>
@@ -275,7 +275,7 @@
                      </div>
                 </div>
 
-                <!-- ================= GANTT VIEW (No Grouping - Platform base) ================= -->
+                <!-- ================= GANTT VIEW ================= -->
                 <div v-else-if="viewMode === 'gantt'" class="flex-1 flex flex-col h-full overflow-hidden">
                     <!-- Gantt Toolbar -->
                     <div class="px-8 py-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center flex-shrink-0">
@@ -299,7 +299,8 @@
                             <div class="h-10 border-b border-slate-800 bg-slate-900"></div> <!-- Header Spacer -->
                             <div class="overflow-y-hidden flex-1" ref="ganttSidebar">
                                 <div v-for="row in ganttRows" :key="row.key" class="h-16 flex items-center px-4 border-b border-slate-800 text-sm font-bold text-slate-300 truncate" :title="row.label">
-                                    <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" :class="getClientColorBg(row.clientId)"></span>
+                                    <!-- 分岐: クライアント選択時は媒体色、全表示時はクライアント色 -->
+                                    <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" :class="currentClient ? getPlatformColorDot(row.key) : getClientColorBg(row.clientId)"></span>
                                     <span class="truncate">{{ row.label }}</span>
                                 </div>
                             </div>
@@ -379,7 +380,7 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">クライアント <span class="text-red-400">*</span></label>
                                 
-                                <!-- 編集モード：単一選択（グループ編集時は変更不可とするのが安全だが、今回は一括再作成なので許可する） -->
+                                <!-- 編集モード：単一選択 -->
                                 <div v-if="isEditing">
                                     <select v-model="editingTaskData.clientId" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                                         <option v-for="c in clients" :value="c.id">{{ c.name }}</option>
@@ -544,7 +545,7 @@
     <script>
         const { createApp } = Vue;
 
-        // カラーパレット定義（border色）
+        // カラーパレット定義（クライアント用：border色）
         const clientBorderColors = [
             'border-red-500', 'border-orange-500', 'border-amber-500', 
             'border-yellow-500', 'border-lime-500', 'border-green-500', 
@@ -554,7 +555,7 @@
             'border-pink-500', 'border-rose-500'
         ];
         
-        // カラーパレット定義（bg色 - borderに対応）
+        // カラーパレット定義（クライアント用：bg色）
         const clientBgColors = [
             'bg-red-500', 'bg-orange-500', 'bg-amber-500', 
             'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 
@@ -564,12 +565,40 @@
             'bg-pink-500', 'bg-rose-500'
         ];
 
+        // カラーパレット定義（プラットフォームタグ用）
+        const platformTagStyles = [
+            'bg-red-900/40 text-red-300 border-red-800',
+            'bg-orange-900/40 text-orange-300 border-orange-800',
+            'bg-amber-900/40 text-amber-300 border-amber-800',
+            'bg-lime-900/40 text-lime-300 border-lime-800',
+            'bg-emerald-900/40 text-emerald-300 border-emerald-800',
+            'bg-teal-900/40 text-teal-300 border-teal-800',
+            'bg-cyan-900/40 text-cyan-300 border-cyan-800',
+            'bg-sky-900/40 text-sky-300 border-sky-800',
+            'bg-blue-900/40 text-blue-300 border-blue-800',
+            'bg-indigo-900/40 text-indigo-300 border-indigo-800',
+            'bg-violet-900/40 text-violet-300 border-violet-800',
+            'bg-purple-900/40 text-purple-300 border-purple-800',
+            'bg-fuchsia-900/40 text-fuchsia-300 border-fuchsia-800',
+            'bg-pink-900/40 text-pink-300 border-pink-800',
+            'bg-rose-900/40 text-rose-300 border-rose-800'
+        ];
+
+        // カラーパレット定義（プラットフォーム単色アイコン用）
+        const platformDotColors = [
+            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 
+            'bg-lime-500', 'bg-emerald-500', 'bg-teal-500', 
+            'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 
+            'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 
+            'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500'
+        ];
+
         createApp({
             data() {
                 return {
                     // --- State ---
                     isSidebarOpen: true, 
-                    viewMode: 'list', // 'list', 'board', 'gantt'
+                    viewMode: 'list', 
                     currentClient: null,
                     filterPlatform: '',
                     
@@ -588,17 +617,17 @@
                     newPlatformName: '',
                     editingTaskData: {
                         id: null,
-                        clientId: '', // For editing & creating (as single target)
-                        targetClientIds: [], // For creating (multi)
-                        platform: '', // (Unused in new UI)
-                        targetPlatforms: [], // For creating & editing (multi)
+                        clientId: '', 
+                        targetClientIds: [],
+                        platform: '', 
+                        targetPlatforms: [], 
                         title: '',
                         description: '',
                         date: '',
                         endDate: '', 
                         status: 'Scheduled',
                         createdAt: null,
-                        originalIds: [] // For editing group: store ids to delete on save
+                        originalIds: [] 
                     },
 
                     // Data Stores
@@ -608,7 +637,6 @@
                 }
             },
             computed: {
-                // Common Filter Logic (Raw Tasks)
                 filteredTasks() {
                     let filtered = this.tasks;
                     if (this.currentClient) {
@@ -620,7 +648,6 @@
                     return filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
                 },
                 
-                // Grouped Tasks for List View
                 groupedFilteredTasks() {
                     return this.groupTasks(this.filteredTasks);
                 },
@@ -629,19 +656,16 @@
                     return this.tasks.filter(t => t.status !== 'Done').length;
                 },
                 
-                // --- Board View Data ---
                 boardData() {
                     let targetClients = this.currentClient ? [this.currentClient] : this.clients;
                     
                     return targetClients.map(client => {
-                        // Filter tasks for this client, apply platform filter
                         const rawClientTasks = this.tasks.filter(t => {
                             if (t.clientId !== client.id) return false;
                             if (this.filterPlatform && t.platform !== this.filterPlatform) return false;
                             return true;
                         }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                        // Group them
                         const groupedClientTasks = this.groupTasks(rawClientTasks);
 
                         return {
@@ -651,7 +675,6 @@
                     });
                 },
 
-                // --- Gantt Chart Computeds ---
                 daysInMonth() {
                     const year = this.ganttYear;
                     const month = this.ganttMonth;
@@ -676,12 +699,11 @@
                 },
                 ganttRows() {
                     if (this.currentClient) {
-                        // Client selected -> Rows are Platforms
                         return this.platforms.map(pf => {
                             return {
                                 key: pf,
                                 label: pf,
-                                clientId: this.currentClient.id, // for color
+                                clientId: this.currentClient.id, 
                                 tasks: this.tasks.filter(t => 
                                     t.clientId === this.currentClient.id && 
                                     t.platform === pf &&
@@ -691,12 +713,11 @@
                         });
                     } 
                     else {
-                        // All Clients -> Rows are Clients
                         return this.clients.map(c => {
                             return {
                                 key: c.id,
                                 label: c.name,
-                                clientId: c.id, // for color
+                                clientId: c.id, 
                                 tasks: this.tasks.filter(t => 
                                     t.clientId === c.id &&
                                     this.isTaskInCurrentMonth(t)
@@ -710,7 +731,6 @@
                 this.loadData();
             },
             methods: {
-                // --- Data Persistance ---
                 loadData() {
                     const savedData = localStorage.getItem('ad_manager_db_v1');
                     if (savedData) {
@@ -719,7 +739,6 @@
                         this.platforms = db.platforms || [];
                         this.tasks = db.tasks || [];
                     } else {
-                        // Init Data
                         this.platforms = ['Google広告', 'Yahoo!検索', 'Yahoo!ディスプレイ', 'LINE広告', 'Meta広告', 'TVer'];
                         this.clients = [{ id: 1, name: 'サンプル株式会社' }];
                         this.tasks = [{ id: Date.now(), clientId: 1, platform: 'Google広告', title: '【例】初期設定', description: '...', date: new Date().toISOString().split('T')[0], status: 'Scheduled', createdAt: new Date().toISOString() }];
@@ -741,7 +760,7 @@
                     }
                 },
 
-                // --- Helper Logic ---
+                // --- Color Helpers ---
                 stringToColorIndex(str) {
                     let hash = 0;
                     if (!str) return 0;
@@ -749,15 +768,23 @@
                     for (let i = 0; i < s.length; i++) {
                         hash = s.charCodeAt(i) + ((hash << 5) - hash);
                     }
-                    return Math.abs(hash) % clientBorderColors.length;
+                    return Math.abs(hash);
                 },
                 getClientColorBorder(clientId) {
-                    const idx = this.stringToColorIndex(clientId);
+                    const idx = this.stringToColorIndex(clientId) % clientBorderColors.length;
                     return clientBorderColors[idx];
                 },
                 getClientColorBg(clientId) {
-                    const idx = this.stringToColorIndex(clientId);
+                    const idx = this.stringToColorIndex(clientId) % clientBgColors.length;
                     return clientBgColors[idx];
+                },
+                getPlatformColorStyle(pfName) {
+                    const idx = this.stringToColorIndex(pfName) % platformTagStyles.length;
+                    return platformTagStyles[idx];
+                },
+                getPlatformColorDot(pfName) {
+                    const idx = this.stringToColorIndex(pfName) % platformDotColors.length;
+                    return platformDotColors[idx];
                 },
 
                 // --- Grouping Logic ---
@@ -765,15 +792,14 @@
                     const groups = {};
                     
                     tasks.forEach(task => {
-                        // Key includes clientId, title, date to group them
                         const key = `${task.clientId}_${task.title}_${task.date}`;
                         if (!groups[key]) {
                             groups[key] = {
-                                ...task, // Copy basic info
+                                ...task, 
                                 uniqueKey: key,
-                                platforms: [], // To store list of platforms
-                                originalIds: [], // To store list of raw IDs
-                                statusMix: [], // To check status consistency
+                                platforms: [], 
+                                originalIds: [], 
+                                statusMix: [], 
                             };
                         }
                         if (!groups[key].platforms.includes(task.platform)) {
@@ -784,12 +810,9 @@
                     });
 
                     return Object.values(groups).map(group => {
-                        // Determine unified status
                         const allDone = group.statusMix.every(s => s === 'Done');
-                        const allLive = group.statusMix.every(s => s === 'Live');
                         const anyLive = group.statusMix.some(s => s === 'Live');
                         
-                        // Simple logic: if mixed, show earliest status or 'Live' if any is live
                         if (allDone) group.status = 'Done';
                         else if (anyLive) group.status = 'Live';
                         else group.status = 'Scheduled';
@@ -798,7 +821,6 @@
                     });
                 },
 
-                // --- UI Helpers ---
                 selectClient(client) {
                     this.currentClient = client;
                 },
@@ -861,7 +883,6 @@
                     return targetDate < today;
                 },
 
-                // --- Gantt Logic ---
                 changeGanttMonth(delta) {
                     let m = this.ganttMonth + delta;
                     let y = this.ganttYear;
@@ -893,11 +914,9 @@
                     const monthStart = new Date(this.ganttYear, this.ganttMonth, 1);
                     const monthEnd = new Date(this.ganttYear, this.ganttMonth + 1, 0);
 
-                    // Clamping
                     let start = taskStart < monthStart ? monthStart : taskStart;
                     let end = taskEnd > monthEnd ? monthEnd : taskEnd;
 
-                    // Days from start of month (0-indexed)
                     const startDayIndex = start.getDate() - 1;
                     let durationDays = (end.getDate() - start.getDate()) + 1;
                     
@@ -920,7 +939,6 @@
                     };
                 },
 
-                // --- Task Management ---
                 openTaskModal() {
                     this.isEditing = false;
                     const initialTargetClients = this.currentClient ? [this.currentClient.id] : [];
@@ -941,19 +959,16 @@
                     };
                     this.showTaskModal = true;
                 },
-                // Updated editGroup to handle grouped task editing
                 editGroup(taskGroup) {
                     this.isEditing = true;
-                    // Deep copy
                     const data = JSON.parse(JSON.stringify(taskGroup));
                     
                     this.editingTaskData = {
                         ...data,
                         clientId: data.clientId, 
-                        // For editing, we use the grouped platforms as initial selection
                         targetPlatforms: data.platforms || [data.platform], 
-                        targetClientIds: [], // Not used in editing mode (locked to single client)
-                        originalIds: data.originalIds || [data.id] // Keep track of what to replace
+                        targetClientIds: [], 
+                        originalIds: data.originalIds || [data.id] 
                     };
                     this.showTaskModal = true;
                 },
@@ -961,45 +976,39 @@
                     this.isEditing = false;
                     const data = JSON.parse(JSON.stringify(taskGroup));
                     
-                    // Duplicate as new
                     this.editingTaskData = {
                         ...data,
                         id: null,
                         title: data.title,
                         status: 'Scheduled',
                         createdAt: null,
-                        targetClientIds: [], // Reset client selection
-                        targetPlatforms: data.platforms || [data.platform], // Keep platforms
-                        originalIds: [] // New task, no originals
+                        targetClientIds: [], 
+                        targetPlatforms: data.platforms || [data.platform], 
+                        originalIds: [] 
                     };
                     this.showTaskModal = true;
                 },
                 saveTask() {
-                    // Validation
                     if (!this.editingTaskData.title || !this.editingTaskData.date) {
                         alert('タスク名と日付は必須です');
                         return;
                     }
 
-                    // Logic Separation
                     if (this.isEditing) {
-                        // === 更新モード (再作成アプローチ) ===
                         if(!this.editingTaskData.clientId) { alert('クライアントを選択してください'); return; }
                         if(this.editingTaskData.targetPlatforms.length === 0) { alert('媒体を1つ以上選択してください'); return; }
                         
-                        // 1. Delete original tasks
                         if (this.editingTaskData.originalIds && this.editingTaskData.originalIds.length > 0) {
                             this.tasks = this.tasks.filter(t => !this.editingTaskData.originalIds.includes(t.id));
                         }
 
-                        // 2. Create new tasks for selected platforms
                         const baseData = { ...this.editingTaskData };
                         delete baseData.targetClientIds; 
                         delete baseData.targetPlatforms;
                         delete baseData.originalIds;
-                        delete baseData.platforms; // cleanup
-                        delete baseData.uniqueKey; // cleanup
-                        delete baseData.statusMix; // cleanup
+                        delete baseData.platforms; 
+                        delete baseData.uniqueKey; 
+                        delete baseData.statusMix; 
 
                         this.editingTaskData.targetPlatforms.forEach(platform => {
                             const newTask = {
@@ -1012,7 +1021,6 @@
                         });
 
                     } else {
-                        // === 新規作成モード (複数クライアント × 複数媒体 一括登録) ===
                         if(this.editingTaskData.targetClientIds.length === 0) {
                             alert('クライアントを1つ以上選択してください');
                             return;
@@ -1054,7 +1062,6 @@
                     };
                     const nextStatus = map[taskGroup.status] || 'Scheduled';
                     
-                    // Update all tasks in this group
                     const idsToUpdate = taskGroup.originalIds || [taskGroup.id];
                     this.tasks.forEach(t => {
                         if (idsToUpdate.includes(t.id)) {
