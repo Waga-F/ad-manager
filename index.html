@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v6.1 (Dark)</title>
+    <title>Ad Manager Pro v6.2 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -565,8 +565,9 @@
             'bg-pink-500', 'bg-rose-500'
         ];
 
-        // カラーパレット定義（プラットフォームタグ用）
+        // カラーパレット定義（プラットフォームタグ用 - 自動割り当て用）
         const platformTagStyles = [
+            'bg-slate-700 text-slate-300 border-slate-600', // Default fallback
             'bg-red-900/40 text-red-300 border-red-800',
             'bg-orange-900/40 text-orange-300 border-orange-800',
             'bg-amber-900/40 text-amber-300 border-amber-800',
@@ -584,14 +585,25 @@
             'bg-rose-900/40 text-rose-300 border-rose-800'
         ];
 
-        // カラーパレット定義（プラットフォーム単色アイコン用）
+        // カラーパレット定義（プラットフォーム単色アイコン用 - 自動割り当て用）
         const platformDotColors = [
+            'bg-slate-500', // Default fallback
             'bg-red-500', 'bg-orange-500', 'bg-amber-500', 
             'bg-lime-500', 'bg-emerald-500', 'bg-teal-500', 
             'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 
             'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 
             'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500'
         ];
+
+        // 指定された媒体カラーマッピング
+        const platformColorMap = {
+            'Google': { tag: 'bg-green-900/40 text-green-300 border-green-800', dot: 'bg-green-500' },
+            'YSS': { tag: 'bg-red-900/40 text-red-300 border-red-800', dot: 'bg-red-500' },
+            'YDN': { tag: 'bg-red-900/40 text-red-300 border-red-800', dot: 'bg-red-500' },
+            'LINE': { tag: 'bg-lime-900/40 text-lime-300 border-lime-800', dot: 'bg-lime-500' },
+            'meta': { tag: 'bg-blue-900/40 text-blue-300 border-blue-800', dot: 'bg-blue-500' },
+            'TVer': { tag: 'bg-cyan-900/40 text-cyan-300 border-cyan-800', dot: 'bg-cyan-500' }
+        };
 
         createApp({
             data() {
@@ -739,9 +751,10 @@
                         this.platforms = db.platforms || [];
                         this.tasks = db.tasks || [];
                     } else {
-                        this.platforms = ['Google広告', 'Yahoo!検索', 'Yahoo!ディスプレイ', 'LINE広告', 'Meta広告', 'TVer'];
+                        // 初期データを指定のものに変更
+                        this.platforms = ['Google', 'YSS', 'YDN', 'LINE', 'meta', 'TVer'];
                         this.clients = [{ id: 1, name: 'サンプル株式会社' }];
-                        this.tasks = [{ id: Date.now(), clientId: 1, platform: 'Google広告', title: '【例】初期設定', description: '...', date: new Date().toISOString().split('T')[0], status: 'Scheduled', createdAt: new Date().toISOString() }];
+                        this.tasks = [{ id: Date.now(), clientId: 1, platform: 'Google', title: '【例】初期設定', description: '...', date: new Date().toISOString().split('T')[0], status: 'Scheduled', createdAt: new Date().toISOString() }];
                         this.saveData();
                     }
                 },
@@ -779,10 +792,17 @@
                     return clientBgColors[idx];
                 },
                 getPlatformColorStyle(pfName) {
+                    // 固定マップにあればそれを使用、なければハッシュで自動割り当て
+                    if (platformColorMap[pfName]) {
+                        return platformColorMap[pfName].tag;
+                    }
                     const idx = this.stringToColorIndex(pfName) % platformTagStyles.length;
                     return platformTagStyles[idx];
                 },
                 getPlatformColorDot(pfName) {
+                    if (platformColorMap[pfName]) {
+                        return platformColorMap[pfName].dot;
+                    }
                     const idx = this.stringToColorIndex(pfName) % platformDotColors.length;
                     return platformDotColors[idx];
                 },
