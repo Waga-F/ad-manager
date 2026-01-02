@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v4.0 (Dark)</title>
+    <title>Ad Manager Pro v4.1 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -49,13 +49,13 @@
     <div id="app" class="flex h-full">
 
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-950 text-slate-300 flex flex-col shadow-2xl z-20 flex-shrink-0 border-r border-slate-800">
-            <div class="p-6 border-b border-slate-800 flex items-center">
+        <aside :class="isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0'" class="bg-slate-950 text-slate-300 flex flex-col shadow-2xl z-20 flex-shrink-0 border-r border-slate-800 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap">
+            <div class="p-6 border-b border-slate-800 flex items-center min-w-[16rem]">
                 <i class="fa-solid fa-layer-group text-blue-500 mr-3 text-xl"></i>
                 <h1 class="text-lg font-bold tracking-wider text-white">Ad Manager</h1>
             </div>
             
-            <nav class="flex-1 overflow-y-auto py-4">
+            <nav class="flex-1 overflow-y-auto py-4 min-w-[16rem]">
                 <ul>
                     <!-- 全タスク一覧 -->
                     <li @click="selectClient(null)" 
@@ -88,7 +88,7 @@
             </nav>
 
             <!-- 設定ボタンエリア -->
-            <div class="p-4 border-t border-slate-800 bg-slate-950">
+            <div class="p-4 border-t border-slate-800 bg-slate-950 min-w-[16rem]">
                 <button @click="openSettings('clients')" class="w-full py-2 px-4 bg-slate-800 hover:bg-slate-700 rounded text-sm text-slate-400 hover:text-white transition flex items-center justify-center">
                     <i class="fa-solid fa-sliders mr-2"></i> 設定・マスタ管理
                 </button>
@@ -100,14 +100,21 @@
             
             <!-- Header -->
             <header class="bg-slate-900 shadow-lg z-10 px-8 py-5 flex justify-between items-center border-b border-slate-800 flex-shrink-0">
-                <div class="flex-1 min-w-0 mr-4">
-                    <h2 class="text-2xl font-bold text-white flex items-center truncate">
-                        <span v-if="currentClient" class="mr-2 text-blue-500 flex-shrink-0"><i class="fa-regular fa-building"></i></span>
-                        <span class="truncate">{{ currentClient ? currentClient.name : '全案件タスク一覧' }}</span>
-                    </h2>
-                    <p class="text-sm text-slate-400 mt-1 truncate">
-                        {{ currentClient ? '担当案件のバナー切り替え・入稿スケジュール' : 'すべてのクライアントの進行状況サマリー' }}
-                    </p>
+                <div class="flex items-center flex-1 min-w-0 mr-4">
+                    <!-- Sidebar Toggle Button -->
+                    <button @click="isSidebarOpen = !isSidebarOpen" class="text-slate-400 hover:text-white mr-5 transition focus:outline-none" title="メニュー開閉">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+
+                    <div class="min-w-0">
+                        <h2 class="text-2xl font-bold text-white flex items-center truncate">
+                            <span v-if="currentClient" class="mr-2 text-blue-500 flex-shrink-0"><i class="fa-regular fa-building"></i></span>
+                            <span class="truncate">{{ currentClient ? currentClient.name : '全案件タスク一覧' }}</span>
+                        </h2>
+                        <p class="text-sm text-slate-400 mt-1 truncate">
+                            {{ currentClient ? '担当案件のバナー切り替え・入稿スケジュール' : 'すべてのクライアントの進行状況サマリー' }}
+                        </p>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-3 flex-shrink-0">
                     <!-- View Toggle -->
@@ -171,7 +178,8 @@
                                 <div class="flex justify-between items-start mb-3">
                                     <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded bg-slate-700 text-slate-300 border border-slate-600">{{ task.platform }}</span>
                                     <span :class="task.status === 'Done' ? 'text-emerald-400 bg-emerald-900/30 border-emerald-800' : 'text-amber-400 bg-amber-900/30 border-amber-800'" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center border">
-                                        <i :class="task.status === 'Done' ? 'fa-solid fa-check mr-1' : 'fa-solid fa-hourglass-half mr-1'"></i> {{ task.status }}
+                                        <i :class="task.status === 'Done' ? 'fa-solid fa-check mr-1' : 'fa-solid fa-hourglass-half mr-1'"></i> 
+                                        {{ task.status === 'Done' ? '完了' : '予定' }}
                                     </span>
                                 </div>
                                 <div v-if="!currentClient" class="text-xs text-slate-400 mb-1 font-bold flex items-center">
@@ -272,7 +280,7 @@
 
                                         <!-- Tooltip -->
                                         <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-slate-950 text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-xl border border-slate-700">
-                                            {{ task.title }} ({{ formatDateRange(task) }})
+                                            {{ task.title }} ({{ formatDateRange(task) }}) - {{ task.status === 'Done' ? '完了' : '予定' }}
                                         </div>
                                     </div>
                                 </div>
@@ -306,7 +314,7 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">クライアント <span class="text-red-400">*</span></label>
                                 
-                                <!-- 編集モード：単一選択（変更不可にするのが安全だが、今回は変更可に） -->
+                                <!-- 編集モード：単一選択 -->
                                 <div v-if="isEditing">
                                     <select v-model="editingTaskData.clientId" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                                         <option v-for="c in clients" :value="c.id">{{ c.name }}</option>
@@ -351,6 +359,15 @@
                                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">終了日 <span class="text-slate-500 font-normal">(任意)</span></label>
                                 <input type="date" v-model="editingTaskData.endDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                             </div>
+                        </div>
+
+                        <!-- Status Selection -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">ステータス</label>
+                            <select v-model="editingTaskData.status" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
+                                <option value="Scheduled">Scheduled (予定)</option>
+                                <option value="Done">Done (完了)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -455,6 +472,7 @@
             data() {
                 return {
                     // --- State ---
+                    isSidebarOpen: true, // サイドバーの開閉状態
                     viewMode: 'list', // 'list' or 'gantt'
                     currentClient: null,
                     filterPlatform: '',
@@ -773,7 +791,7 @@
                                 ...baseData,
                                 id: Date.now() + Math.random(), // Unique ID generation
                                 clientId: clientId,
-                                status: 'Scheduled'
+                                // status is already in baseData
                             };
                             this.tasks.push(newTask);
                         });
