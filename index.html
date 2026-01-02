@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v7.0 (Dark)</title>
+    <title>Ad Manager Pro v7.1 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -142,7 +142,7 @@
             <!-- Content Area -->
             <div class="flex-1 overflow-hidden bg-slate-900 flex flex-col">
                 
-                <!-- FILTER BAR (List & Board Mode) -->
+                <!-- FILTER BAR -->
                 <div v-if="viewMode !== 'gantt'" class="px-8 pt-6 pb-2 flex-shrink-0">
                     <div class="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
                         <span class="text-xs font-bold text-slate-500 mr-2 uppercase tracking-wider flex-shrink-0">Filter:</span>
@@ -161,38 +161,27 @@
                     <div v-if="groupedFilteredTasks.length === 0" class="text-center text-slate-500 py-20">
                         <p class="font-medium">タスクがありません</p>
                     </div>
-                    <!-- Cards -->
                     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- Grouped Task Card -->
                         <div v-for="taskGroup in groupedFilteredTasks" :key="taskGroup.uniqueKey" class="bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex flex-col group border border-slate-700 overflow-hidden relative">
-                            <!-- クライアントカラーバー -->
                             <div :class="getClientColor(taskGroup.clientId, 'border')" class="absolute left-0 top-0 bottom-0 w-1.5 border-l-4"></div>
-                            
                             <div class="p-5 flex-1 pl-6">
                                 <div class="flex justify-between items-start mb-3">
                                     <div v-if="!currentClient" class="text-xs font-bold text-slate-300 flex items-center">
                                         <span class="w-2 h-2 rounded-full mr-2" :class="getClientColor(taskGroup.clientId, 'bg')"></span>
                                         {{ getClientName(taskGroup.clientId) }}
                                     </div>
-                                    <div v-else class="h-4"></div> <!-- Spacer -->
-
-                                    <!-- Group Status Badge -->
+                                    <div v-else class="h-4"></div> 
                                     <span :class="getStatusClass(taskGroup.status)" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center border">
                                         <i :class="getStatusIcon(taskGroup.status)" class="mr-1"></i> {{ getStatusLabel(taskGroup.status) }}
                                     </span>
                                 </div>
-
                                 <h3 class="font-bold text-slate-100 text-lg mb-2 leading-snug cursor-pointer hover:text-blue-400 transition" @click="editGroup(taskGroup)">{{ taskGroup.title }}</h3>
-                                
-                                <!-- Platform Tags (Colored) -->
                                 <div class="flex flex-wrap gap-1.5 mb-3">
                                     <span v-for="pf in taskGroup.platforms" :key="pf" class="px-2 py-0.5 rounded text-[10px] font-medium border" :class="getPlatformColorStyle(pf)">
                                         {{ pf }}
                                     </span>
                                 </div>
-
                                 <p class="text-xs text-slate-400 mb-4 line-clamp-2 min-h-[1.5em]">{{ taskGroup.description || '詳細なし' }}</p>
-                                
                                 <div class="flex flex-col space-y-1.5">
                                     <div class="flex items-center text-sm font-medium text-slate-300 bg-slate-900/50 p-2 rounded border border-slate-700">
                                         <i class="fa-regular fa-calendar text-slate-500 mr-2"></i>
@@ -227,9 +216,7 @@
                 <!-- ================= BOARD VIEW ================= -->
                 <div v-else-if="viewMode === 'board'" class="flex-1 overflow-x-auto overflow-y-hidden px-8 pb-8 pt-4">
                      <div class="flex space-x-4 h-full">
-                        <!-- Client Columns -->
                         <div v-for="col in boardData" :key="col.client.id" class="w-80 bg-slate-800 rounded-xl border border-slate-700 flex-shrink-0 flex flex-col max-h-full">
-                            <!-- Column Header -->
                             <div class="p-4 border-b border-slate-700 bg-slate-800 rounded-t-xl sticky top-0 z-10 flex justify-between items-center border-t-4" :class="getColor(col.client.color, 'border')">
                                 <div class="font-bold text-slate-200 truncate pr-2 flex items-center">
                                     <i class="fa-regular fa-building text-slate-500 mr-2 text-sm"></i>
@@ -237,11 +224,8 @@
                                 </div>
                                 <span class="bg-slate-700 text-slate-400 text-xs px-2 py-0.5 rounded-full">{{ col.tasks.length }}</span>
                             </div>
-                            
-                            <!-- Tasks List (Grouped) -->
                             <div class="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-800/50">
                                 <div v-for="taskGroup in col.tasks" :key="taskGroup.uniqueKey" class="bg-slate-700/50 p-3 rounded-lg border border-slate-600 hover:border-blue-500/50 transition cursor-pointer group relative hover:shadow-md" @click="editGroup(taskGroup)">
-                                    
                                     <div class="mb-2">
                                         <div class="flex justify-between items-start mb-1">
                                             <div class="flex flex-wrap gap-1 max-w-[80%]">
@@ -261,7 +245,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Hover Actions -->
                                     <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button @click.stop="duplicateGroup(taskGroup)" class="text-slate-500 hover:text-green-400 p-1" title="複製"><i class="fa-regular fa-copy"></i></button>
                                     </div>
@@ -271,14 +254,12 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Spacer for scrolling -->
                         <div class="w-4"></div>
                      </div>
                 </div>
 
                 <!-- ================= GANTT VIEW ================= -->
                 <div v-else-if="viewMode === 'gantt'" class="flex-1 flex flex-col h-full overflow-hidden">
-                    <!-- Gantt Toolbar -->
                     <div class="px-8 py-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center flex-shrink-0">
                         <div class="flex items-center space-x-4">
                             <button @click="changeGanttMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-400 transition"><i class="fa-solid fa-chevron-left"></i></button>
@@ -293,24 +274,19 @@
                         </div>
                     </div>
 
-                    <!-- Gantt Chart Body -->
                     <div class="flex-1 flex overflow-hidden bg-slate-900">
-                        <!-- Sidebar (Row Headers) -->
                         <div class="w-48 flex-shrink-0 border-r border-slate-800 bg-slate-900 overflow-hidden flex flex-col">
-                            <div class="h-10 border-b border-slate-800 bg-slate-900"></div> <!-- Header Spacer -->
+                            <div class="h-10 border-b border-slate-800 bg-slate-900"></div> 
                             <div class="overflow-y-hidden flex-1" ref="ganttSidebar">
                                 <div v-for="row in ganttRows" :key="row.key" class="h-16 flex items-center px-4 border-b border-slate-800 text-sm font-bold text-slate-300 truncate" :title="row.label">
-                                    <!-- 分岐: クライアント選択時は媒体色、全表示時はクライアント色 -->
                                     <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" :class="currentClient ? getPlatformColorDot(row.key) : getClientColor(row.clientId, 'bg')"></span>
                                     <span class="truncate">{{ row.label }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Timeline Grid -->
                         <div class="flex-1 overflow-x-auto overflow-y-auto relative bg-slate-900" ref="ganttScrollContainer">
                             <div :style="{ width: (daysInMonth.length * 40) + 'px' }" class="min-w-full">
-                                <!-- Calendar Header -->
                                 <div class="flex h-10 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
                                     <div v-for="day in daysInMonth" :key="day.date" 
                                         :class="{'bg-blue-900/30 text-blue-400': day.isToday, 'text-red-400': day.isHoliday, 'text-slate-400': !day.isHoliday && !day.isToday}"
@@ -320,9 +296,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Rows -->
                                 <div v-for="row in ganttRows" :key="row.key" class="h-16 border-b border-slate-800 relative">
-                                    <!-- Grid Lines -->
                                     <div class="absolute inset-0 flex pointer-events-none">
                                         <div v-for="day in daysInMonth" :key="'line-'+day.date" 
                                              :class="{'bg-blue-900/10': day.isToday}"
@@ -330,7 +304,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Tasks Bars -->
                                     <div v-for="task in row.tasks" :key="task.id" 
                                          @click="editGroup({ ...task, originalIds: [task.id], platforms: [task.platform], targetPlatforms: [task.platform] })" 
                                          :style="getTaskStyle(task)"
@@ -340,19 +313,12 @@
                                             getTaskStyle(task).isPoint ? 'rounded-full' : 'rounded-md'
                                          ]"
                                          class="absolute h-8 top-4 shadow-lg cursor-pointer transition-all z-10 flex items-center justify-center group overflow-hidden border text-white text-xs font-bold px-2 whitespace-nowrap">
-                                        
-                                        <!-- Point marker content -->
                                         <i v-if="getTaskStyle(task).isPoint" class="fa-solid fa-diamond text-[10px]"></i>
                                         <span v-else class="truncate w-full drop-shadow-md">{{ task.title }}</span>
-
-                                        <!-- Tooltip -->
                                         <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-slate-950 text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-xl border border-slate-700">
                                             {{ task.title }} ({{ formatDateRange(task) }}) - {{ task.status === 'Done' ? '完了' : (task.status === 'Live' ? '掲載中' : '予定') }}
                                         </div>
                                     </div>
-                                </div>
-                                <div v-if="ganttRows.length === 0" class="p-8 text-slate-600 text-center">
-                                    データがありません
                                 </div>
                             </div>
                         </div>
@@ -362,7 +328,7 @@
             </div>
         </main>
 
-        <!-- Task Modal (追加・編集兼用) -->
+        <!-- Task Modal -->
         <transition name="modal">
             <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                 <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all scale-100 border border-slate-700">
@@ -377,19 +343,14 @@
                         </div>
                         
                         <div class="grid grid-cols-2 gap-6">
-                            <!-- Client Selection -->
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">クライアント <span class="text-red-400">*</span></label>
-                                
-                                <!-- 編集モード：単一選択 -->
                                 <div v-if="isEditing">
                                     <select v-model="editingTaskData.clientId" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                                         <option v-for="c in clients" :value="c.id">{{ c.name }}</option>
                                     </select>
                                     <p class="text-[10px] text-yellow-500 mt-1" v-if="isEditing"><i class="fa-solid fa-triangle-exclamation mr-1"></i>変更すると全ての媒体タスクがこの顧客に移動します</p>
                                 </div>
-
-                                <!-- 新規モード：複数選択UI -->
                                 <div v-else class="h-40 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
                                     <div v-for="c in clients" :key="c.id" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
                                         <input type="checkbox" :value="c.id" v-model="editingTaskData.targetClientIds" :id="'client-'+c.id" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
@@ -403,11 +364,8 @@
                                 <p v-if="!isEditing" class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-check-double mr-1"></i>複数選択で一括作成されます</p>
                             </div>
 
-                            <!-- Platform Selection -->
                             <div>
                                 <label class="block text-xs font-bold text-slate-400 uppercase mb-2">媒体 <span class="text-red-400">*</span></label>
-                                
-                                <!-- 編集モード・新規モード共に複数選択可能にする (編集時は再作成のため) -->
                                 <div class="h-40 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
                                     <div v-for="p in platforms" :key="p.name" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
                                         <input type="checkbox" :value="p.name" v-model="editingTaskData.targetPlatforms" :id="'pf-'+p.name" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
@@ -444,7 +402,6 @@
                             </div>
                         </div>
 
-                        <!-- Status Selection -->
                         <div>
                             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">ステータス</label>
                             <select v-model="editingTaskData.status" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
@@ -465,7 +422,7 @@
             </div>
         </transition>
 
-        <!-- Settings Modal (設定・マスタ管理) -->
+        <!-- Settings Modal -->
         <transition name="modal">
             <div v-if="showSettingsModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                 <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden h-3/4 flex flex-col border border-slate-700">
@@ -494,10 +451,7 @@
                             <div v-if="settingsTab === 'clients'">
                                 <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">顧客リスト編集</h4>
                                 <div class="flex space-x-2 mb-6">
-                                    <!-- Color Picker -->
-                                    <select v-model="newClientColor" class="bg-slate-700 border border-slate-600 rounded-lg px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none text-white w-24">
-                                        <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
-                                    </select>
+                                    <color-picker v-model="newClientColor" :colors="COLORS" class="w-24"></color-picker>
                                     <input type="text" v-model="newClientName" @keyup.enter="addClient" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい顧客名を入力">
                                     <button @click="addClient" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
                                         <i class="fa-solid fa-plus"></i> 追加
@@ -506,11 +460,8 @@
                                 <div class="space-y-2">
                                     <div v-for="client in clients" :key="client.id" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-2 rounded-lg shadow-sm group hover:border-blue-500 transition border-l-4" :class="getColor(client.color, 'border')">
                                         <div class="flex items-center flex-1">
-                                            <!-- Edit Color for existing -->
-                                            <select v-model="client.color" @change="saveData" class="bg-transparent border-none text-xs text-slate-400 focus:ring-0 cursor-pointer mr-2 w-16">
-                                                <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
-                                            </select>
-                                            <span class="font-medium text-slate-200">{{ client.name }}</span>
+                                            <color-picker v-model="client.color" :colors="COLORS" :compact="true" @update:model-value="saveData"></color-picker>
+                                            <span class="font-medium text-slate-200 ml-2">{{ client.name }}</span>
                                         </div>
                                         <button @click="removeClient(client.id)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-trash-can"></i>
@@ -524,10 +475,7 @@
                             <div v-if="settingsTab === 'platforms'">
                                 <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">広告媒体リスト編集</h4>
                                 <div class="flex space-x-2 mb-6">
-                                    <!-- Color Picker -->
-                                    <select v-model="newPlatformColor" class="bg-slate-700 border border-slate-600 rounded-lg px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none text-white w-24">
-                                        <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
-                                    </select>
+                                    <color-picker v-model="newPlatformColor" :colors="COLORS" class="w-24"></color-picker>
                                     <input type="text" v-model="newPlatformName" @keyup.enter="addPlatform" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい媒体名を入力">
                                     <button @click="addPlatform" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
                                         <i class="fa-solid fa-plus"></i> 追加
@@ -536,13 +484,8 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <div v-for="pf in platforms" :key="pf.name" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-2 rounded-lg shadow-sm group hover:border-blue-500 transition">
                                         <div class="flex items-center flex-1">
-                                            <span class="w-3 h-3 rounded-full mr-2" :class="getColor(pf.color, 'bg')"></span>
-                                            <div class="flex flex-col">
-                                                <span class="font-medium text-slate-200 text-sm">{{ pf.name }}</span>
-                                                <select v-model="pf.color" @change="saveData" class="bg-transparent border-none text-[10px] text-slate-500 focus:ring-0 cursor-pointer p-0 h-4">
-                                                    <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
-                                                </select>
-                                            </div>
+                                            <color-picker v-model="pf.color" :colors="COLORS" :compact="true" @update:model-value="saveData"></color-picker>
+                                            <span class="font-medium text-slate-200 text-sm ml-2">{{ pf.name }}</span>
                                         </div>
                                         <button @click="removePlatform(pf.name)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-trash-can"></i>
@@ -574,6 +517,50 @@
     <script>
         const { createApp } = Vue;
 
+        // Custom Color Picker Component
+        const ColorPicker = {
+            props: ['modelValue', 'colors', 'compact'],
+            emits: ['update:modelValue'],
+            template: `
+                <div class="relative inline-block text-left">
+                    <!-- Trigger -->
+                    <button @click="isOpen = !isOpen" type="button" 
+                        class="inline-flex items-center justify-between rounded-lg border border-slate-600 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="compact ? 'p-1.5 hover:bg-slate-600 border-none bg-transparent' : 'w-full px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white'">
+                        
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 rounded-full flex-shrink-0" :class="colors[modelValue]?.dot || 'bg-slate-500'"></span>
+                            <span v-if="!compact" class="ml-2 text-xs font-medium">{{ colors[modelValue]?.label || '選択' }}</span>
+                        </div>
+                        <i v-if="!compact" class="fa-solid fa-chevron-down ml-2 text-[10px] text-slate-400"></i>
+                    </button>
+
+                    <!-- Dropdown Backdrop (Invisible) -->
+                    <div v-if="isOpen" @click="isOpen = false" class="fixed inset-0 z-40"></div>
+
+                    <!-- Dropdown Menu -->
+                    <div v-if="isOpen" class="absolute left-0 mt-1 w-32 rounded-md shadow-xl bg-slate-800 ring-1 ring-black ring-opacity-20 z-50 max-h-60 overflow-y-auto border border-slate-700 custom-scrollbar">
+                        <div class="py-1">
+                            <div v-for="(val, key) in colors" :key="key" 
+                                @click="select(key)"
+                                class="flex items-center px-4 py-2 text-xs text-slate-200 hover:bg-slate-700 cursor-pointer transition-colors"
+                                :class="{'bg-slate-700': modelValue === key}">
+                                <span class="w-3 h-3 rounded-full mr-3 flex-shrink-0" :class="val.dot"></span>
+                                {{ val.label }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            data() { return { isOpen: false } },
+            methods: {
+                select(key) {
+                    this.$emit('update:modelValue', key);
+                    this.isOpen = false;
+                }
+            }
+        };
+
         // Enhanced Color Palette
         const COLORS = {
             red: { label: '赤', border: 'border-red-500', bg: 'bg-red-500', dot: 'bg-red-500', tag: 'bg-red-900/40 text-red-300 border-red-800' },
@@ -593,34 +580,24 @@
             slate: { label: '灰', border: 'border-slate-500', bg: 'bg-slate-500', dot: 'bg-slate-500', tag: 'bg-slate-700 text-slate-300 border-slate-600' },
         };
 
-        createApp({
+        const app = createApp({
             data() {
                 return {
-                    // Constants
                     COLORS,
-
-                    // State
                     isSidebarOpen: true, 
                     viewMode: 'list', 
                     currentClient: null,
                     filterPlatform: '',
-                    
-                    // Gantt State
                     ganttYear: new Date().getFullYear(),
                     ganttMonth: new Date().getMonth(),
-
-                    // UI State
                     showTaskModal: false,
                     showSettingsModal: false,
                     settingsTab: 'clients',
                     isEditing: false,
-                    
-                    // Input Buffers
                     newClientName: '',
                     newClientColor: 'blue',
                     newPlatformName: '',
                     newPlatformColor: 'green',
-
                     editingTaskData: {
                         id: null,
                         clientId: '', 
@@ -635,10 +612,8 @@
                         createdAt: null,
                         originalIds: [] 
                     },
-
-                    // Data Stores
-                    platforms: [], // Now array of objects { name, color }
-                    clients: [],   // Now array of objects { id, name, color }
+                    platforms: [],
+                    clients: [],
                     tasks: []
                 }
             },
@@ -653,42 +628,30 @@
                     }
                     return filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
                 },
-                
                 groupedFilteredTasks() {
                     return this.groupTasks(this.filteredTasks);
                 },
-
                 allPendingTasksCount() {
                     return this.tasks.filter(t => t.status !== 'Done').length;
                 },
-                
                 boardData() {
                     let targetClients = this.currentClient ? [this.currentClient] : this.clients;
-                    
                     return targetClients.map(client => {
                         const rawClientTasks = this.tasks.filter(t => {
                             if (t.clientId !== client.id) return false;
                             if (this.filterPlatform && t.platform !== this.filterPlatform) return false;
                             return true;
                         }).sort((a, b) => new Date(a.date) - new Date(b.date));
-
                         const groupedClientTasks = this.groupTasks(rawClientTasks);
-
-                        return {
-                            client: client,
-                            tasks: groupedClientTasks
-                        };
+                        return { client: client, tasks: groupedClientTasks };
                     });
                 },
-
                 daysInMonth() {
                     const year = this.ganttYear;
                     const month = this.ganttMonth;
                     const date = new Date(year, month, 1);
                     const days = [];
                     const weekDays = ['日','月','火','水','木','金','土'];
-                    const today = new Date();
-                    
                     while (date.getMonth() === month) {
                         const dayVal = new Date(date);
                         days.push({
@@ -696,7 +659,7 @@
                             day: dayVal.getDate(),
                             weekDay: weekDays[dayVal.getDay()],
                             isHoliday: dayVal.getDay() === 0 || dayVal.getDay() === 6,
-                            isToday: dayVal.toDateString() === today.toDateString(),
+                            isToday: dayVal.toDateString() === new Date().toDateString(),
                             obj: dayVal
                         });
                         date.setDate(date.getDate() + 1);
@@ -718,13 +681,12 @@
                                 )
                             };
                         });
-                    } 
-                    else {
+                    } else {
                         return this.clients.map(c => {
                             return {
                                 key: c.id,
                                 label: c.name,
-                                clientId: c.id, // for color lookup
+                                clientId: c.id, 
                                 tasks: this.tasks.filter(t => 
                                     t.clientId === c.id &&
                                     this.isTaskInCurrentMonth(t)
@@ -738,22 +700,16 @@
                 this.loadData();
             },
             methods: {
-                // --- Data Persistance with Migration ---
                 loadData() {
                     const savedData = localStorage.getItem('ad_manager_db_v1');
                     if (savedData) {
                         const db = JSON.parse(savedData);
-                        
-                        // Migrate Clients (add color if missing)
                         this.clients = (db.clients || []).map(c => ({
                             ...c,
                             color: c.color || this.getRandomColorKey()
                         }));
-
-                        // Migrate Platforms (string -> object)
                         this.platforms = (db.platforms || []).map(p => {
                             if (typeof p === 'string') {
-                                // Default map for migration
                                 const map = {
                                     'Google': 'green', 'Google広告': 'green',
                                     'YSS': 'red', 'Yahoo!検索': 'red',
@@ -766,16 +722,14 @@
                             }
                             return p;
                         });
-
                         this.tasks = db.tasks || [];
                     } else {
-                        // Init Data
                         this.platforms = [
                             { name: 'Google', color: 'green' },
                             { name: 'YSS', color: 'red' },
                             { name: 'YDN', color: 'red' },
                             { name: 'LINE', color: 'lime' },
-                            { name: 'meta', color: 'purple' }, // Default Purple
+                            { name: 'meta', color: 'purple' },
                             { name: 'TVer', color: 'cyan' }
                         ];
                         this.clients = [{ id: 1, name: 'サンプル株式会社', color: 'blue' }];
@@ -797,14 +751,11 @@
                         location.reload();
                     }
                 },
-
-                // --- Color Helpers ---
                 getRandomColorKey() {
                     const keys = Object.keys(COLORS);
                     return keys[Math.floor(Math.random() * keys.length)];
                 },
                 getColor(colorKey, type) {
-                    // type: 'border', 'bg', 'dot', 'tag'
                     const c = COLORS[colorKey] || COLORS['slate'];
                     return c[type];
                 },
@@ -812,6 +763,12 @@
                     const client = this.clients.find(c => c.id === clientId);
                     const colorKey = client ? client.color : 'slate';
                     return this.getColor(colorKey, type);
+                },
+                getClientColorBg(clientId) {
+                    return this.getClientColor(clientId, 'bg');
+                },
+                getClientColorBorder(clientId) {
+                    return this.getClientColor(clientId, 'border');
                 },
                 getPlatformColorStyle(pfName) {
                     const pf = this.platforms.find(p => p.name === pfName);
@@ -823,11 +780,8 @@
                     const colorKey = pf ? pf.color : 'slate';
                     return this.getColor(colorKey, 'dot');
                 },
-
-                // --- Grouping Logic ---
                 groupTasks(tasks) {
                     const groups = {};
-                    
                     tasks.forEach(task => {
                         const key = `${task.clientId}_${task.title}_${task.date}`;
                         if (!groups[key]) {
@@ -845,19 +799,15 @@
                         groups[key].originalIds.push(task.id);
                         groups[key].statusMix.push(task.status);
                     });
-
                     return Object.values(groups).map(group => {
                         const allDone = group.statusMix.every(s => s === 'Done');
                         const anyLive = group.statusMix.some(s => s === 'Live');
-                        
                         if (allDone) group.status = 'Done';
                         else if (anyLive) group.status = 'Live';
                         else group.status = 'Scheduled';
-                        
                         return group;
                     });
                 },
-
                 selectClient(client) {
                     this.currentClient = client;
                 },
@@ -919,7 +869,6 @@
                     const targetDate = task.endDate || task.date;
                     return targetDate < today;
                 },
-
                 changeGanttMonth(delta) {
                     let m = this.ganttMonth + delta;
                     let y = this.ganttYear;
@@ -936,10 +885,8 @@
                 isTaskInCurrentMonth(task) {
                     const taskStart = new Date(task.date);
                     const taskEnd = task.endDate ? new Date(task.endDate) : taskStart;
-                    
                     const monthStart = new Date(this.ganttYear, this.ganttMonth, 1);
                     const monthEnd = new Date(this.ganttYear, this.ganttMonth + 1, 0);
-
                     return (taskStart <= monthEnd) && (taskEnd >= monthStart);
                 },
                 getTaskStyle(task) {
@@ -947,41 +894,23 @@
                     const taskStart = new Date(task.date);
                     const taskEnd = task.endDate ? new Date(task.endDate) : taskStart;
                     const isPoint = !task.endDate || task.date === task.endDate;
-
                     const monthStart = new Date(this.ganttYear, this.ganttMonth, 1);
                     const monthEnd = new Date(this.ganttYear, this.ganttMonth + 1, 0);
-
                     let start = taskStart < monthStart ? monthStart : taskStart;
                     let end = taskEnd > monthEnd ? monthEnd : taskEnd;
-
                     const startDayIndex = start.getDate() - 1;
                     let durationDays = (end.getDate() - start.getDate()) + 1;
-                    
                     const left = startDayIndex * CELL_WIDTH;
                     let width = durationDays * CELL_WIDTH;
-                    
                     if (isPoint) {
-                        return {
-                            left: (left + 10) + 'px', 
-                            width: '20px',
-                            isPoint: true
-                        };
+                        return { left: (left + 10) + 'px', width: '20px', isPoint: true };
                     }
-
-                    return {
-                        left: left + 'px',
-                        width: (width - 4) + 'px',
-                        marginLeft: '2px',
-                        isPoint: false
-                    };
+                    return { left: left + 'px', width: (width - 4) + 'px', marginLeft: '2px', isPoint: false };
                 },
-
                 openTaskModal() {
                     this.isEditing = false;
                     const initialTargetClients = this.currentClient ? [this.currentClient.id] : [];
-                    // Use pf.name since platforms is object array
                     const initialTargetPlatforms = this.platforms.length > 0 ? [this.platforms[0].name] : [];
-                    
                     this.editingTaskData = {
                         id: null,
                         clientId: this.currentClient ? this.currentClient.id : (this.clients[0]?.id || ''),
@@ -1000,7 +929,6 @@
                 editGroup(taskGroup) {
                     this.isEditing = true;
                     const data = JSON.parse(JSON.stringify(taskGroup));
-                    
                     this.editingTaskData = {
                         ...data,
                         clientId: data.clientId, 
@@ -1013,7 +941,6 @@
                 duplicateGroup(taskGroup) {
                     this.isEditing = false;
                     const data = JSON.parse(JSON.stringify(taskGroup));
-                    
                     this.editingTaskData = {
                         ...data,
                         id: null,
@@ -1031,15 +958,12 @@
                         alert('タスク名と日付は必須です');
                         return;
                     }
-
                     if (this.isEditing) {
                         if(!this.editingTaskData.clientId) { alert('クライアントを選択してください'); return; }
                         if(this.editingTaskData.targetPlatforms.length === 0) { alert('媒体を1つ以上選択してください'); return; }
-                        
                         if (this.editingTaskData.originalIds && this.editingTaskData.originalIds.length > 0) {
                             this.tasks = this.tasks.filter(t => !this.editingTaskData.originalIds.includes(t.id));
                         }
-
                         const baseData = { ...this.editingTaskData };
                         delete baseData.targetClientIds; 
                         delete baseData.targetPlatforms;
@@ -1047,7 +971,6 @@
                         delete baseData.platforms; 
                         delete baseData.uniqueKey; 
                         delete baseData.statusMix; 
-
                         this.editingTaskData.targetPlatforms.forEach(platform => {
                             const newTask = {
                                 ...baseData,
@@ -1057,7 +980,6 @@
                             };
                             this.tasks.push(newTask);
                         });
-
                     } else {
                         if(this.editingTaskData.targetClientIds.length === 0) {
                             alert('クライアントを1つ以上選択してください');
@@ -1067,15 +989,12 @@
                             alert('媒体を1つ以上選択してください');
                             return;
                         }
-
                         const baseData = { ...this.editingTaskData };
                         delete baseData.targetClientIds; 
                         delete baseData.targetPlatforms;
                         delete baseData.id;
                         delete baseData.originalIds;
-
                         baseData.createdAt = new Date().toISOString();
-
                         this.editingTaskData.targetClientIds.forEach(clientId => {
                             this.editingTaskData.targetPlatforms.forEach(platform => {
                                 const newTask = {
@@ -1088,18 +1007,12 @@
                             });
                         });
                     }
-
                     this.saveData();
                     this.showTaskModal = false;
                 },
                 toggleGroupStatus(taskGroup) {
-                    const map = {
-                        'Scheduled': 'Live',
-                        'Live': 'Done',
-                        'Done': 'Scheduled'
-                    };
+                    const map = { 'Scheduled': 'Live', 'Live': 'Done', 'Done': 'Scheduled' };
                     const nextStatus = map[taskGroup.status] || 'Scheduled';
-                    
                     const idsToUpdate = taskGroup.originalIds || [taskGroup.id];
                     this.tasks.forEach(t => {
                         if (idsToUpdate.includes(t.id)) {
@@ -1115,8 +1028,6 @@
                         this.saveData();
                     }
                 },
-
-                // --- Settings Management ---
                 addClient() {
                     if(!this.newClientName.trim()) return;
                     this.clients.push({
@@ -1153,7 +1064,10 @@
                     }
                 }
             }
-        }).mount('#app');
+        });
+
+        app.component('color-picker', ColorPicker);
+        app.mount('#app');
     </script>
 </body>
 </html>
