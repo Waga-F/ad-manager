@@ -3,52 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v3.1</title>
+    <title>Ad Manager Pro v4.0 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- FontAwesome (Icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            750: '#2d3748',
+                            850: '#1a202c',
+                            950: '#0d1117',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; }
-        /* スクロールバーカスタマイズ */
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        
+        /* ダークモード用スクロールバー */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         
         .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
         .modal-enter-from, .modal-leave-to { opacity: 0; }
 
-        /* ガントチャート用のグリッド線 */
+        /* ガントチャート用のグリッド線 (Dark) */
         .gantt-grid-line {
-            border-right: 1px dashed #e5e7eb;
-        }
-        .gantt-grid-line:last-child {
-            border-right: none;
+            border-right: 1px dashed #334155;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 h-screen overflow-hidden">
+<body class="h-screen overflow-hidden bg-slate-900 text-slate-200">
 
     <div id="app" class="flex h-full">
 
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20 flex-shrink-0">
-            <div class="p-6 border-b border-slate-700 flex items-center">
-                <i class="fa-solid fa-layer-group text-blue-400 mr-3 text-xl"></i>
-                <h1 class="text-lg font-bold tracking-wider">Ad Manager</h1>
+        <aside class="w-64 bg-slate-950 text-slate-300 flex flex-col shadow-2xl z-20 flex-shrink-0 border-r border-slate-800">
+            <div class="p-6 border-b border-slate-800 flex items-center">
+                <i class="fa-solid fa-layer-group text-blue-500 mr-3 text-xl"></i>
+                <h1 class="text-lg font-bold tracking-wider text-white">Ad Manager</h1>
             </div>
             
             <nav class="flex-1 overflow-y-auto py-4">
                 <ul>
                     <!-- 全タスク一覧 -->
                     <li @click="selectClient(null)" 
-                        :class="{'bg-blue-600': currentClient === null, 'hover:bg-slate-800': currentClient !== null}"
+                        :class="{'bg-blue-600 text-white': currentClient === null, 'hover:bg-slate-800': currentClient !== null}"
                         class="px-6 py-3 cursor-pointer transition-colors flex items-center justify-between border-l-4 border-transparent">
                         <span class="text-sm font-medium"><i class="fa-solid fa-list-check mr-3 w-5"></i>全タスク</span>
-                        <span v-if="allPendingTasksCount > 0" class="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{{ allPendingTasksCount }}</span>
+                        <span v-if="allPendingTasksCount > 0" class="bg-slate-700 text-slate-200 text-xs px-2 py-0.5 rounded-full">{{ allPendingTasksCount }}</span>
                     </li>
 
                     <li class="px-6 py-3 mt-4 text-xs font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center group">
@@ -59,69 +73,69 @@
                     </li>
 
                     <li v-if="clients.length === 0" class="px-6 py-4 text-xs text-slate-500 italic text-center">
-                        顧客が登録されていません。<br>下の設定から追加してください。
+                        顧客未登録<br>設定から追加してください
                     </li>
 
                     <!-- 顧客リスト -->
                     <li v-for="client in clients" :key="client.id" 
                         @click="selectClient(client)"
-                        :class="{'bg-slate-800 border-l-4 border-blue-500': currentClient && currentClient.id === client.id, 'hover:bg-slate-800 border-l-4 border-transparent': !currentClient || currentClient.id !== client.id}"
+                        :class="{'bg-slate-800 border-l-4 border-blue-500 text-white': currentClient && currentClient.id === client.id, 'hover:bg-slate-800 border-l-4 border-transparent text-slate-400 hover:text-slate-200': !currentClient || currentClient.id !== client.id}"
                         class="px-6 py-3 cursor-pointer transition-colors flex justify-between items-center text-sm">
                         <span class="truncate pr-2">{{ client.name }}</span>
-                        <span v-if="getPendingCount(client.id) > 0" class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full">{{ getPendingCount(client.id) }}</span>
+                        <span v-if="getPendingCount(client.id) > 0" class="bg-slate-700 text-blue-300 text-xs px-2 py-0.5 rounded-full">{{ getPendingCount(client.id) }}</span>
                     </li>
                 </ul>
             </nav>
 
             <!-- 設定ボタンエリア -->
-            <div class="p-4 border-t border-slate-800 bg-slate-900">
-                <button @click="openSettings('clients')" class="w-full py-2 px-4 bg-slate-800 hover:bg-slate-700 rounded text-sm text-slate-300 transition flex items-center justify-center">
+            <div class="p-4 border-t border-slate-800 bg-slate-950">
+                <button @click="openSettings('clients')" class="w-full py-2 px-4 bg-slate-800 hover:bg-slate-700 rounded text-sm text-slate-400 hover:text-white transition flex items-center justify-center">
                     <i class="fa-solid fa-sliders mr-2"></i> 設定・マスタ管理
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden relative">
+        <main class="flex-1 flex flex-col overflow-hidden relative bg-slate-900">
             
             <!-- Header -->
-            <header class="bg-white shadow-sm z-10 px-8 py-5 flex justify-between items-center border-b border-gray-200 flex-shrink-0">
+            <header class="bg-slate-900 shadow-lg z-10 px-8 py-5 flex justify-between items-center border-b border-slate-800 flex-shrink-0">
                 <div class="flex-1 min-w-0 mr-4">
-                    <h2 class="text-2xl font-bold text-gray-800 flex items-center truncate">
-                        <span v-if="currentClient" class="mr-2 text-blue-600 flex-shrink-0"><i class="fa-regular fa-building"></i></span>
+                    <h2 class="text-2xl font-bold text-white flex items-center truncate">
+                        <span v-if="currentClient" class="mr-2 text-blue-500 flex-shrink-0"><i class="fa-regular fa-building"></i></span>
                         <span class="truncate">{{ currentClient ? currentClient.name : '全案件タスク一覧' }}</span>
                     </h2>
-                    <p class="text-sm text-gray-500 mt-1 truncate">
+                    <p class="text-sm text-slate-400 mt-1 truncate">
                         {{ currentClient ? '担当案件のバナー切り替え・入稿スケジュール' : 'すべてのクライアントの進行状況サマリー' }}
                     </p>
                 </div>
                 <div class="flex items-center space-x-3 flex-shrink-0">
                     <!-- View Toggle -->
-                    <div class="bg-gray-100 p-1 rounded-lg flex border border-gray-200">
-                        <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-3 py-1.5 rounded-md text-sm font-bold transition flex items-center">
+                    <div class="bg-slate-800 p-1 rounded-lg flex border border-slate-700">
+                        <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'" class="px-3 py-1.5 rounded-md text-sm font-bold transition flex items-center">
                             <i class="fa-solid fa-list mr-2"></i> リスト
                         </button>
-                        <button @click="viewMode = 'gantt'" :class="viewMode === 'gantt' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-3 py-1.5 rounded-md text-sm font-bold transition flex items-center">
+                        <button @click="viewMode = 'gantt'" :class="viewMode === 'gantt' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'" class="px-3 py-1.5 rounded-md text-sm font-bold transition flex items-center">
                             <i class="fa-solid fa-chart-gantt mr-2"></i> チャート
                         </button>
                     </div>
 
-                    <button @click="openTaskModal" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5 flex items-center font-bold text-sm">
+                    <button @click="openTaskModal" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg shadow-lg hover:shadow-blue-900/50 transition transform hover:-translate-y-0.5 flex items-center font-bold text-sm border border-blue-500">
                         <i class="fa-solid fa-plus mr-2"></i> タスク追加
                     </button>
                 </div>
             </header>
 
             <!-- Content Area -->
-            <div class="flex-1 overflow-hidden bg-gray-50 flex flex-col">
+            <div class="flex-1 overflow-hidden bg-slate-900 flex flex-col">
                 
                 <!-- FILTER BAR (List Mode Only) -->
                 <div v-if="viewMode === 'list'" class="px-8 pt-6 pb-2 flex-shrink-0">
                     <div class="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
-                        <span class="text-xs font-bold text-gray-400 mr-2 uppercase tracking-wider flex-shrink-0">Filter:</span>
-                        <button @click="filterPlatform = ''" :class="filterPlatform === '' ? 'bg-slate-700 text-white ring-2 ring-slate-700' : 'bg-white text-gray-600 hover:bg-gray-100'" class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm border border-transparent transition-all flex-shrink-0">全て</button>
+                        <span class="text-xs font-bold text-slate-500 mr-2 uppercase tracking-wider flex-shrink-0">Filter:</span>
+                        <button @click="filterPlatform = ''" :class="filterPlatform === '' ? 'bg-slate-700 text-white ring-2 ring-slate-600' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'" class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm border border-slate-700 transition-all flex-shrink-0">全て</button>
                         <button v-for="pf in platforms" :key="pf" @click="filterPlatform = pf" 
-                            :class="filterPlatform === pf ? 'bg-blue-100 text-blue-800 border-blue-300 ring-2 ring-blue-200' : 'bg-white text-gray-600 hover:bg-gray-100 border-gray-200'"
+                            :class="filterPlatform === pf ? 'bg-blue-900/50 text-blue-200 border-blue-700 ring-2 ring-blue-900' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border-slate-700'"
                             class="px-4 py-1.5 rounded-full text-sm font-medium border shadow-sm transition-all whitespace-nowrap flex-shrink-0">
                             {{ pf }}
                         </button>
@@ -132,53 +146,57 @@
                 <div v-if="viewMode === 'list'" class="flex-1 overflow-y-auto px-8 pb-8 pt-4">
                     <!-- Empty State -->
                     <div v-if="clients.length === 0" class="flex flex-col items-center justify-center h-64 text-center">
-                        <div class="bg-white p-8 rounded-xl shadow-sm max-w-lg">
-                            <i class="fa-solid fa-gear text-4xl text-gray-300 mb-4"></i>
-                            <h3 class="text-lg font-bold text-gray-700 mb-2">まずは設定をはじめましょう</h3>
-                            <p class="text-gray-500 mb-6 text-sm">左下の「設定・マスタ管理」ボタンから、<br>クライアント名と使用する広告媒体を登録してください。</p>
-                            <button @click="openSettings('clients')" class="text-blue-600 font-bold hover:underline">設定画面を開く &rarr;</button>
+                        <div class="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700 max-w-lg">
+                            <i class="fa-solid fa-gear text-4xl text-slate-600 mb-4"></i>
+                            <h3 class="text-lg font-bold text-slate-200 mb-2">まずは設定をはじめましょう</h3>
+                            <p class="text-slate-400 mb-6 text-sm">左下の「設定・マスタ管理」ボタンから、<br>クライアント名と使用する広告媒体を登録してください。</p>
+                            <button @click="openSettings('clients')" class="text-blue-400 font-bold hover:underline">設定画面を開く &rarr;</button>
                         </div>
                     </div>
 
-                    <div v-else-if="filteredTasks.length === 0" class="text-center text-gray-400 py-20">
-                        <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
-                            <i class="fa-solid fa-check text-3xl text-gray-300"></i>
+                    <div v-else-if="filteredTasks.length === 0" class="text-center text-slate-500 py-20">
+                        <div class="inline-block p-4 rounded-full bg-slate-800 mb-4">
+                            <i class="fa-solid fa-check text-3xl text-slate-600"></i>
                         </div>
                         <p class="font-medium">表示するタスクがありません</p>
                     </div>
 
                     <!-- Cards -->
                     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <div v-for="task in filteredTasks" :key="task.id" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col group border border-gray-100 overflow-hidden relative">
+                        <div v-for="task in filteredTasks" :key="task.id" class="bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex flex-col group border border-slate-700 overflow-hidden relative">
                             <!-- 左側のカラーバー -->
                             <div :class="getPlatformColorClass(task.platform)" class="absolute left-0 top-0 bottom-0 w-1.5"></div>
+                            
                             <div class="p-5 flex-1 pl-6">
                                 <div class="flex justify-between items-start mb-3">
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded bg-gray-100 text-gray-500">{{ task.platform }}</span>
-                                    <span :class="task.status === 'Done' ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50'" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded bg-slate-700 text-slate-300 border border-slate-600">{{ task.platform }}</span>
+                                    <span :class="task.status === 'Done' ? 'text-emerald-400 bg-emerald-900/30 border-emerald-800' : 'text-amber-400 bg-amber-900/30 border-amber-800'" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center border">
                                         <i :class="task.status === 'Done' ? 'fa-solid fa-check mr-1' : 'fa-solid fa-hourglass-half mr-1'"></i> {{ task.status }}
                                     </span>
                                 </div>
-                                <div v-if="!currentClient" class="text-xs text-gray-400 mb-1 font-bold flex items-center">
+                                <div v-if="!currentClient" class="text-xs text-slate-400 mb-1 font-bold flex items-center">
                                     <i class="fa-regular fa-building mr-1.5"></i>{{ getClientName(task.clientId) }}
                                 </div>
-                                <h3 class="font-bold text-gray-800 text-lg mb-2 leading-snug cursor-pointer hover:text-blue-600" @click="editTask(task)">{{ task.title }}</h3>
-                                <p class="text-xs text-gray-500 mb-4 line-clamp-2 min-h-[2.5em]">{{ task.description || '詳細なし' }}</p>
-                                <div class="flex items-center text-sm font-medium text-gray-600 bg-gray-50 p-2 rounded border border-gray-100">
-                                    <i class="fa-regular fa-calendar text-gray-400 mr-2"></i>
+                                <h3 class="font-bold text-slate-100 text-lg mb-2 leading-snug cursor-pointer hover:text-blue-400 transition" @click="editTask(task)">{{ task.title }}</h3>
+                                <p class="text-xs text-slate-400 mb-4 line-clamp-2 min-h-[2.5em]">{{ task.description || '詳細なし' }}</p>
+                                <div class="flex items-center text-sm font-medium text-slate-300 bg-slate-900/50 p-2 rounded border border-slate-700">
+                                    <i class="fa-regular fa-calendar text-slate-500 mr-2"></i>
                                     {{ formatDateRange(task) }}
-                                    <span v-if="isOverdue(task)" class="ml-auto text-xs text-red-500 font-bold">期限切れ</span>
+                                    <span v-if="isOverdue(task)" class="ml-auto text-xs text-red-400 font-bold">期限切れ</span>
                                 </div>
                             </div>
-                            <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-between items-center pl-6">
-                                <button @click="toggleStatus(task)" class="text-xs font-bold text-slate-600 hover:text-blue-600 flex items-center transition">
+                            <div class="bg-slate-900/30 px-5 py-3 border-t border-slate-700 flex justify-between items-center pl-6">
+                                <button @click="toggleStatus(task)" class="text-xs font-bold text-slate-400 hover:text-blue-400 flex items-center transition">
                                     <i class="fa-solid fa-rotate mr-1"></i> ステータス変更
                                 </button>
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button @click="editTask(task)" class="text-gray-400 hover:text-blue-500 mr-3" title="編集">
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-3">
+                                    <button @click="duplicateTask(task)" class="text-slate-500 hover:text-green-400 transition" title="複製して新規作成">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                    <button @click="editTask(task)" class="text-slate-500 hover:text-blue-400 transition" title="編集">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button @click="deleteTask(task.id)" class="text-gray-400 hover:text-red-500" title="削除">
+                                    <button @click="deleteTask(task.id)" class="text-slate-500 hover:text-red-400 transition" title="削除">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
@@ -190,51 +208,51 @@
                 <!-- ================= GANTT VIEW ================= -->
                 <div v-else-if="viewMode === 'gantt'" class="flex-1 flex flex-col h-full overflow-hidden">
                     <!-- Gantt Toolbar -->
-                    <div class="px-8 py-4 bg-white border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+                    <div class="px-8 py-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center flex-shrink-0">
                         <div class="flex items-center space-x-4">
-                            <button @click="changeGanttMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition"><i class="fa-solid fa-chevron-left"></i></button>
-                            <span class="text-lg font-bold text-gray-800 w-32 text-center">{{ ganttYear }}年 {{ ganttMonth + 1 }}月</span>
-                            <button @click="changeGanttMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 transition"><i class="fa-solid fa-chevron-right"></i></button>
-                            <button @click="resetGanttDate" class="text-sm text-blue-600 hover:underline">今日へ戻る</button>
+                            <button @click="changeGanttMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-400 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="text-lg font-bold text-slate-200 w-32 text-center">{{ ganttYear }}年 {{ ganttMonth + 1 }}月</span>
+                            <button @click="changeGanttMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-400 transition"><i class="fa-solid fa-chevron-right"></i></button>
+                            <button @click="resetGanttDate" class="text-sm text-blue-400 hover:underline">今日へ戻る</button>
                         </div>
-                        <div class="flex items-center space-x-4 text-xs text-gray-500">
-                             <div class="flex items-center"><span class="w-3 h-3 bg-amber-400 rounded-sm mr-1"></span> 予定</div>
+                        <div class="flex items-center space-x-4 text-xs text-slate-500">
+                             <div class="flex items-center"><span class="w-3 h-3 bg-amber-500 rounded-sm mr-1"></span> 予定</div>
                              <div class="flex items-center"><span class="w-3 h-3 bg-emerald-500 rounded-sm mr-1"></span> 完了</div>
                         </div>
                     </div>
 
                     <!-- Gantt Chart Body -->
-                    <div class="flex-1 flex overflow-hidden bg-white">
+                    <div class="flex-1 flex overflow-hidden bg-slate-900">
                         <!-- Sidebar (Row Headers) -->
-                        <div class="w-48 flex-shrink-0 border-r border-gray-200 bg-gray-50 overflow-hidden flex flex-col">
-                            <div class="h-10 border-b border-gray-200 bg-gray-100"></div> <!-- Header Spacer -->
-                            <div class="overflow-y-hidden flex-1" ref="ganttSidebar"> <!-- scroll synced via JS if needed, but here simple -->
-                                <div v-for="row in ganttRows" :key="row.key" class="h-16 flex items-center px-4 border-b border-gray-100 text-sm font-bold text-gray-700 truncate" :title="row.label">
+                        <div class="w-48 flex-shrink-0 border-r border-slate-800 bg-slate-900 overflow-hidden flex flex-col">
+                            <div class="h-10 border-b border-slate-800 bg-slate-900"></div> <!-- Header Spacer -->
+                            <div class="overflow-y-hidden flex-1" ref="ganttSidebar">
+                                <div v-for="row in ganttRows" :key="row.key" class="h-16 flex items-center px-4 border-b border-slate-800 text-sm font-bold text-slate-300 truncate" :title="row.label">
                                     {{ row.label }}
                                 </div>
                             </div>
                         </div>
 
                         <!-- Timeline Grid -->
-                        <div class="flex-1 overflow-x-auto overflow-y-auto relative" ref="ganttScrollContainer">
+                        <div class="flex-1 overflow-x-auto overflow-y-auto relative bg-slate-900" ref="ganttScrollContainer">
                             <div :style="{ width: (daysInMonth.length * 40) + 'px' }" class="min-w-full">
                                 <!-- Calendar Header -->
-                                <div class="flex h-10 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+                                <div class="flex h-10 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
                                     <div v-for="day in daysInMonth" :key="day.date" 
-                                        :class="{'bg-blue-50 text-blue-600': day.isToday, 'text-red-400': day.isHoliday}"
-                                        class="flex-1 min-w-[40px] flex flex-col items-center justify-center border-r border-gray-200 text-xs font-medium">
+                                        :class="{'bg-blue-900/30 text-blue-400': day.isToday, 'text-red-400': day.isHoliday, 'text-slate-400': !day.isHoliday && !day.isToday}"
+                                        class="flex-1 min-w-[40px] flex flex-col items-center justify-center border-r border-slate-800 text-xs font-medium">
                                         <span>{{ day.day }}</span>
-                                        <span class="text-[10px] opacity-70">{{ day.weekDay }}</span>
+                                        <span class="text-[10px] opacity-50">{{ day.weekDay }}</span>
                                     </div>
                                 </div>
 
                                 <!-- Rows -->
-                                <div v-for="row in ganttRows" :key="row.key" class="h-16 border-b border-gray-100 relative">
+                                <div v-for="row in ganttRows" :key="row.key" class="h-16 border-b border-slate-800 relative">
                                     <!-- Grid Lines -->
                                     <div class="absolute inset-0 flex pointer-events-none">
                                         <div v-for="day in daysInMonth" :key="'line-'+day.date" 
-                                             :class="{'bg-blue-50 bg-opacity-30': day.isToday}"
-                                             class="flex-1 min-w-[40px] border-r border-gray-100 border-dashed h-full">
+                                             :class="{'bg-blue-900/10': day.isToday}"
+                                             class="flex-1 min-w-[40px] border-r border-slate-800 border-dashed h-full opacity-50">
                                         </div>
                                     </div>
 
@@ -243,22 +261,22 @@
                                          @click="editTask(task)"
                                          :style="getTaskStyle(task)"
                                          :class="[
-                                            task.status === 'Done' ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-amber-400 hover:bg-amber-500',
+                                            task.status === 'Done' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-400' : 'bg-amber-600 hover:bg-amber-500 border-amber-400',
                                             getTaskStyle(task).isPoint ? 'rounded-full' : 'rounded-md'
                                          ]"
-                                         class="absolute h-8 top-4 shadow-sm cursor-pointer transition-colors z-10 flex items-center justify-center group overflow-hidden border border-white/20 text-white text-xs font-bold px-2 whitespace-nowrap">
+                                         class="absolute h-8 top-4 shadow-lg cursor-pointer transition-all z-10 flex items-center justify-center group overflow-hidden border text-white text-xs font-bold px-2 whitespace-nowrap">
                                         
                                         <!-- Point marker content -->
                                         <i v-if="getTaskStyle(task).isPoint" class="fa-solid fa-diamond text-[10px]"></i>
-                                        <span v-else class="truncate w-full">{{ task.title }}</span>
+                                        <span v-else class="truncate w-full drop-shadow-md">{{ task.title }}</span>
 
                                         <!-- Tooltip -->
-                                        <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                                        <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-slate-950 text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-xl border border-slate-700">
                                             {{ task.title }} ({{ formatDateRange(task) }})
                                         </div>
                                     </div>
                                 </div>
-                                <div v-if="ganttRows.length === 0" class="p-8 text-gray-400 text-center">
+                                <div v-if="ganttRows.length === 0" class="p-8 text-slate-600 text-center">
                                     データがありません
                                 </div>
                             </div>
@@ -269,62 +287,77 @@
             </div>
         </main>
 
-        <!-- Task Modal -->
+        <!-- Task Modal (追加・編集兼用) -->
         <transition name="modal">
-            <div v-if="showTaskModal" class="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
-                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-gray-800">{{ isEditing ? 'タスク編集' : '新規タスク追加' }}</h3>
-                        <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button>
+            <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+                <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100 border border-slate-700">
+                    <div class="bg-slate-900 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">{{ isEditing ? 'タスク編集' : '新規タスク追加' }}</h3>
+                        <button @click="showTaskModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
                     </div>
                     
                     <div class="p-6 space-y-4">
-                        <div v-if="clients.length === 0" class="bg-yellow-50 text-yellow-800 p-3 rounded text-sm mb-4">
+                        <div v-if="clients.length === 0" class="bg-amber-900/30 text-amber-200 p-3 rounded text-sm mb-4 border border-amber-800">
                             <i class="fa-solid fa-exclamation-triangle mr-1"></i> まず設定画面からクライアントを登録してください。
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
+                            <!-- Client Selection -->
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">クライアント <span class="text-red-500">*</span></label>
-                                <select v-model="editingTaskData.clientId" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white">
-                                    <option v-for="c in clients" :value="c.id">{{ c.name }}</option>
-                                </select>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">クライアント <span class="text-red-400">*</span></label>
+                                
+                                <!-- 編集モード：単一選択（変更不可にするのが安全だが、今回は変更可に） -->
+                                <div v-if="isEditing">
+                                    <select v-model="editingTaskData.clientId" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
+                                        <option v-for="c in clients" :value="c.id">{{ c.name }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- 新規モード：複数選択UI -->
+                                <div v-else class="h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
+                                    <div v-for="c in clients" :key="c.id" class="flex items-center mb-1 last:mb-0">
+                                        <input type="checkbox" :value="c.id" v-model="editingTaskData.targetClientIds" :id="'client-'+c.id" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
+                                        <label :for="'client-'+c.id" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate">{{ c.name }}</label>
+                                    </div>
+                                    <div v-if="clients.length===0" class="text-xs text-slate-500 text-center mt-4">なし</div>
+                                </div>
+                                <p v-if="!isEditing" class="text-[10px] text-slate-400 mt-1">※複数の顧客に一括登録できます</p>
                             </div>
+
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">媒体 <span class="text-red-500">*</span></label>
-                                <select v-model="editingTaskData.platform" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">媒体 <span class="text-red-400">*</span></label>
+                                <select v-model="editingTaskData.platform" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                                     <option v-for="p in platforms" :value="p">{{ p }}</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">タスク名 <span class="text-red-500">*</span></label>
-                            <input type="text" v-model="editingTaskData.title" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder="例: GWセール バナー入稿">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">タスク名 <span class="text-red-400">*</span></label>
+                            <input type="text" v-model="editingTaskData.title" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white" placeholder="例: GWセール バナー入稿">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">詳細メモ</label>
-                            <textarea v-model="editingTaskData.description" rows="3" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" placeholder="リンク先URLや特記事項など..."></textarea>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">詳細メモ</label>
+                            <textarea v-model="editingTaskData.description" rows="3" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white" placeholder="リンク先URLや特記事項など..."></textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">開始日 / 切替日 <span class="text-red-500">*</span></label>
-                                <input type="date" v-model="editingTaskData.date" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">開始日 / 切替日 <span class="text-red-400">*</span></label>
+                                <input type="date" v-model="editingTaskData.date" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">終了日 <span class="text-gray-400 font-normal">(任意)</span></label>
-                                <input type="date" v-model="editingTaskData.endDate" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm">
-                                <p class="text-[10px] text-gray-400 mt-1">※入力すると期間バーで表示されます</p>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">終了日 <span class="text-slate-500 font-normal">(任意)</span></label>
+                                <input type="date" v-model="editingTaskData.endDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                             </div>
                         </div>
                     </div>
 
-                    <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3 border-t border-gray-100">
-                        <button @click="showTaskModal = false" class="px-5 py-2 bg-white border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm font-medium transition">キャンセル</button>
-                        <button @click="saveTask" :disabled="clients.length === 0" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            {{ isEditing ? '更新する' : '追加する' }}
+                    <div class="px-6 py-4 bg-slate-900 flex justify-end space-x-3 border-t border-slate-800">
+                        <button @click="showTaskModal = false" class="px-5 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 text-sm font-medium transition">キャンセル</button>
+                        <button @click="saveTask" :disabled="clients.length === 0" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 text-sm font-bold shadow-lg shadow-blue-900/50 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            {{ isEditing ? '更新する' : (editingTaskData.targetClientIds.length > 1 ? editingTaskData.targetClientIds.length + '件を一括登録' : '追加する') }}
                         </button>
                     </div>
                 </div>
@@ -333,62 +366,62 @@
 
         <!-- Settings Modal (設定・マスタ管理) -->
         <transition name="modal">
-            <div v-if="showSettingsModal" class="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden h-3/4 flex flex-col">
-                    <div class="bg-slate-800 px-6 py-4 flex justify-between items-center text-white shrink-0">
+            <div v-if="showSettingsModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+                <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden h-3/4 flex flex-col border border-slate-700">
+                    <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0 border-b border-slate-700">
                         <h3 class="text-lg font-bold"><i class="fa-solid fa-sliders mr-2"></i>設定・マスタ管理</h3>
                         <button @click="showSettingsModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
                     </div>
                     
                     <div class="flex flex-1 overflow-hidden">
                         <!-- Settings Sidebar -->
-                        <div class="w-48 bg-gray-50 border-r border-gray-200 p-4 flex flex-col space-y-2">
-                            <button @click="settingsTab = 'clients'" :class="settingsTab === 'clients' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-600 hover:bg-gray-200'" class="w-full text-left px-4 py-2 rounded-lg text-sm transition">
+                        <div class="w-48 bg-slate-900 border-r border-slate-700 p-4 flex flex-col space-y-2">
+                            <button @click="settingsTab = 'clients'" :class="settingsTab === 'clients' ? 'bg-blue-900/40 text-blue-400 font-bold border border-blue-800' : 'text-slate-400 hover:bg-slate-800'" class="w-full text-left px-4 py-2 rounded-lg text-sm transition">
                                 <i class="fa-regular fa-building mr-2 w-4 text-center"></i> 顧客管理
                             </button>
-                            <button @click="settingsTab = 'platforms'" :class="settingsTab === 'platforms' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-600 hover:bg-gray-200'" class="w-full text-left px-4 py-2 rounded-lg text-sm transition">
+                            <button @click="settingsTab = 'platforms'" :class="settingsTab === 'platforms' ? 'bg-blue-900/40 text-blue-400 font-bold border border-blue-800' : 'text-slate-400 hover:bg-slate-800'" class="w-full text-left px-4 py-2 rounded-lg text-sm transition">
                                 <i class="fa-solid fa-desktop mr-2 w-4 text-center"></i> 媒体設定
                             </button>
-                            <button @click="settingsTab = 'data'" :class="settingsTab === 'data' ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-600 hover:bg-gray-200'" class="w-full text-left px-4 py-2 rounded-lg text-sm transition">
+                            <button @click="settingsTab = 'data'" :class="settingsTab === 'data' ? 'bg-blue-900/40 text-blue-400 font-bold border border-blue-800' : 'text-slate-400 hover:bg-slate-800'" class="w-full text-left px-4 py-2 rounded-lg text-sm transition">
                                 <i class="fa-solid fa-database mr-2 w-4 text-center"></i> データ管理
                             </button>
                         </div>
 
                         <!-- Settings Content -->
-                        <div class="flex-1 p-6 overflow-y-auto">
+                        <div class="flex-1 p-6 overflow-y-auto bg-slate-800">
                             <!-- 顧客管理タブ -->
                             <div v-if="settingsTab === 'clients'">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">顧客リスト編集</h4>
+                                <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">顧客リスト編集</h4>
                                 <div class="flex space-x-2 mb-6">
-                                    <input type="text" v-model="newClientName" @keyup.enter="addClient" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="新しい顧客名を入力 (例: 株式会社Z社)">
-                                    <button @click="addClient" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
+                                    <input type="text" v-model="newClientName" @keyup.enter="addClient" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい顧客名を入力 (例: 株式会社Z社)">
+                                    <button @click="addClient" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
                                         <i class="fa-solid fa-plus"></i> 追加
                                     </button>
                                 </div>
                                 <div class="space-y-2">
-                                    <div v-for="client in clients" :key="client.id" class="flex justify-between items-center bg-white border border-gray-200 p-3 rounded-lg shadow-sm group hover:border-blue-300 transition">
-                                        <span class="font-medium text-gray-700">{{ client.name }}</span>
-                                        <button @click="removeClient(client.id)" class="text-gray-400 hover:text-red-500 px-2 py-1 rounded hover:bg-red-50 transition">
+                                    <div v-for="client in clients" :key="client.id" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-3 rounded-lg shadow-sm group hover:border-blue-500 transition">
+                                        <span class="font-medium text-slate-200">{{ client.name }}</span>
+                                        <button @click="removeClient(client.id)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </div>
-                                    <div v-if="clients.length === 0" class="text-center text-gray-400 text-sm py-4">顧客が登録されていません</div>
+                                    <div v-if="clients.length === 0" class="text-center text-slate-500 text-sm py-4">顧客が登録されていません</div>
                                 </div>
                             </div>
 
                             <!-- 媒体管理タブ -->
                             <div v-if="settingsTab === 'platforms'">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">広告媒体リスト編集</h4>
+                                <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">広告媒体リスト編集</h4>
                                 <div class="flex space-x-2 mb-6">
-                                    <input type="text" v-model="newPlatformName" @keyup.enter="addPlatform" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="新しい媒体名を入力 (例: SmartNews)">
-                                    <button @click="addPlatform" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
+                                    <input type="text" v-model="newPlatformName" @keyup.enter="addPlatform" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい媒体名を入力 (例: SmartNews)">
+                                    <button @click="addPlatform" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
                                         <i class="fa-solid fa-plus"></i> 追加
                                     </button>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div v-for="pf in platforms" :key="pf" class="flex justify-between items-center bg-white border border-gray-200 p-3 rounded-lg shadow-sm group hover:border-blue-300 transition">
-                                        <span class="font-medium text-gray-700 text-sm">{{ pf }}</span>
-                                        <button @click="removePlatform(pf)" class="text-gray-400 hover:text-red-500 px-2 py-1 rounded hover:bg-red-50 transition">
+                                    <div v-for="pf in platforms" :key="pf" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-3 rounded-lg shadow-sm group hover:border-blue-500 transition">
+                                        <span class="font-medium text-slate-200 text-sm">{{ pf }}</span>
+                                        <button @click="removePlatform(pf)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </div>
@@ -397,11 +430,11 @@
 
                              <!-- データ管理タブ -->
                              <div v-if="settingsTab === 'data'">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">データ管理</h4>
-                                <div class="bg-red-50 border border-red-100 p-4 rounded-lg">
-                                    <h5 class="text-red-800 font-bold text-sm mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 全データ削除</h5>
-                                    <p class="text-red-600 text-xs mb-4">登録したすべての顧客、媒体、タスクデータを削除し初期化します。この操作は取り消せません。</p>
-                                    <button @click="resetAllData" class="bg-white border border-red-300 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded text-sm font-bold transition">
+                                <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">データ管理</h4>
+                                <div class="bg-red-900/20 border border-red-900/50 p-4 rounded-lg">
+                                    <h5 class="text-red-400 font-bold text-sm mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 全データ削除</h5>
+                                    <p class="text-red-300/70 text-xs mb-4">登録したすべての顧客、媒体、タスクデータを削除し初期化します。この操作は取り消せません。</p>
+                                    <button @click="resetAllData" class="bg-transparent border border-red-800 text-red-400 hover:bg-red-900/50 hover:text-red-200 px-4 py-2 rounded text-sm font-bold transition">
                                         全てのデータをリセット
                                     </button>
                                 </div>
@@ -441,12 +474,13 @@
                     newPlatformName: '',
                     editingTaskData: {
                         id: null,
-                        clientId: '',
+                        clientId: '', // For editing mode (single)
+                        targetClientIds: [], // For create mode (multiple)
                         platform: '',
                         title: '',
                         description: '',
                         date: '',
-                        endDate: '', // New field for range
+                        endDate: '', 
                         status: 'Scheduled'
                     },
 
@@ -496,7 +530,6 @@
                     return days;
                 },
                 ganttRows() {
-                    // If Client Selected: Rows = Platforms
                     if (this.currentClient) {
                         return this.platforms.map(pf => {
                             return {
@@ -510,8 +543,6 @@
                             };
                         });
                     } 
-                    // If All Clients: Rows = Clients -> Platforms (Simplified to just Clients for overview, or Clients per row)
-                    // For better visibility, let's group by Client.
                     else {
                         return this.clients.map(c => {
                             return {
@@ -564,10 +595,6 @@
                 // --- UI Logic ---
                 selectClient(client) {
                     this.currentClient = client;
-                    // Reset filters when switching views
-                    if (this.viewMode === 'list') {
-                       // keep
-                    }
                 },
                 openSettings(tab = 'clients') {
                     this.settingsTab = tab;
@@ -582,7 +609,7 @@
                         'Meta広告': 'bg-indigo-600',
                         'TVer': 'bg-sky-400'
                     };
-                    return map[platform] || 'bg-gray-300';
+                    return map[platform] || 'bg-slate-600';
                 },
                 getClientName(id) {
                     const c = this.clients.find(c => c.id === id);
@@ -605,7 +632,6 @@
                 isOverdue(task) {
                     if(task.status === 'Done') return false;
                     const today = new Date().toISOString().split('T')[0];
-                    // If endDate exists, check against endDate, else date
                     const targetDate = task.endDate || task.date;
                     return targetDate < today;
                 },
@@ -634,7 +660,7 @@
                     return (taskStart <= monthEnd) && (taskEnd >= monthStart);
                 },
                 getTaskStyle(task) {
-                    const CELL_WIDTH = 40; // px
+                    const CELL_WIDTH = 40; 
                     const taskStart = new Date(task.date);
                     const taskEnd = task.endDate ? new Date(task.endDate) : taskStart;
                     const isPoint = !task.endDate || task.date === task.endDate;
@@ -650,18 +676,12 @@
                     const startDayIndex = start.getDate() - 1;
                     let durationDays = (end.getDate() - start.getDate()) + 1;
                     
-                    if (taskStart < monthStart) {
-                         // adjustment handled by clamp
-                    }
-
-                    // Calculate position
                     const left = startDayIndex * CELL_WIDTH;
                     let width = durationDays * CELL_WIDTH;
                     
-                    // For single point, center it or make it small
                     if (isPoint) {
                         return {
-                            left: (left + 10) + 'px', // Center in 40px cell
+                            left: (left + 10) + 'px', 
                             width: '20px',
                             isPoint: true
                         };
@@ -669,7 +689,7 @@
 
                     return {
                         left: left + 'px',
-                        width: (width - 4) + 'px', // -4 for gap
+                        width: (width - 4) + 'px',
                         marginLeft: '2px',
                         isPoint: false
                     };
@@ -678,9 +698,13 @@
                 // --- Task Management ---
                 openTaskModal() {
                     this.isEditing = false;
+                    // デフォルトで現在表示中のクライアントを選択状態に。なければ空。
+                    const initialTarget = this.currentClient ? [this.currentClient.id] : [];
+                    
                     this.editingTaskData = {
                         id: null,
-                        clientId: this.currentClient ? this.currentClient.id : (this.clients.length > 0 ? this.clients[0].id : ''),
+                        clientId: '', 
+                        targetClientIds: initialTarget, // Multi Select Init
                         platform: this.platforms.length > 0 ? this.platforms[0] : '',
                         title: '',
                         description: '',
@@ -692,29 +716,69 @@
                 },
                 editTask(task) {
                     this.isEditing = true;
-                    this.editingTaskData = JSON.parse(JSON.stringify(task));
+                    // Deep copy
+                    const data = JSON.parse(JSON.stringify(task));
+                    this.editingTaskData = {
+                        ...data,
+                        targetClientIds: [data.clientId] // 編集時は自身のクライアントIDのみ
+                    };
+                    this.showTaskModal = true;
+                },
+                duplicateTask(task) {
+                    this.isEditing = false;
+                    const data = JSON.parse(JSON.stringify(task));
+                    
+                    // コピー作成。IDはnull、clientIdはコピー元を引き継ぎつつ複数選択配列にも入れる
+                    this.editingTaskData = {
+                        ...data,
+                        id: null,
+                        title: data.title + ' (コピー)',
+                        status: 'Scheduled',
+                        targetClientIds: [data.clientId] 
+                    };
                     this.showTaskModal = true;
                 },
                 saveTask() {
-                    if (!this.editingTaskData.title || !this.editingTaskData.clientId || !this.editingTaskData.date) {
-                        alert('必須項目を入力してください');
+                    // Validation
+                    if (!this.editingTaskData.title || !this.editingTaskData.date) {
+                        alert('タスク名と日付は必須です');
                         return;
                     }
 
+                    // Logic Separation
                     if (this.isEditing) {
-                        // Update
+                        // === 更新モード (単一タスク) ===
+                        if(!this.editingTaskData.clientId) { alert('クライアントを選択してください'); return; }
+                        
                         const index = this.tasks.findIndex(t => t.id === this.editingTaskData.id);
                         if(index !== -1) {
-                            this.tasks[index] = { ...this.editingTaskData };
+                            // targetClientIds等は保存不要なので除去してマージ
+                            const { targetClientIds, ...taskData } = this.editingTaskData;
+                            this.tasks[index] = taskData;
                         }
                     } else {
-                        // Create
-                        const newTask = {
-                            ...this.editingTaskData,
-                            id: Date.now()
-                        };
-                        this.tasks.push(newTask);
+                        // === 新規作成モード (複数クライアント一括登録) ===
+                        if(this.editingTaskData.targetClientIds.length === 0) {
+                            alert('クライアントを1つ以上選択してください');
+                            return;
+                        }
+
+                        // 選択されたクライアントごとにタスク生成
+                        const baseData = { ...this.editingTaskData };
+                        delete baseData.targetClientIds; // 不要プロパティ削除
+                        delete baseData.id;
+
+                        this.editingTaskData.targetClientIds.forEach(clientId => {
+                            const newTask = {
+                                ...baseData,
+                                id: Date.now() + Math.random(), // Unique ID generation
+                                clientId: clientId,
+                                status: 'Scheduled'
+                            };
+                            this.tasks.push(newTask);
+                        });
                     }
+
                     this.saveData();
                     this.showTaskModal = false;
                 },
