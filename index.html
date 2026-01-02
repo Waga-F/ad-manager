@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v6.2 (Dark)</title>
+    <title>Ad Manager Pro v7.0 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -82,7 +82,7 @@
                         :class="{'bg-slate-800 border-l-4 border-blue-500 text-white': currentClient && currentClient.id === client.id, 'hover:bg-slate-800 border-l-4 border-transparent text-slate-400 hover:text-slate-200': !currentClient || currentClient.id !== client.id}"
                         class="px-6 py-3 cursor-pointer transition-colors flex justify-between items-center text-sm">
                         <span class="truncate pr-2">
-                            <span class="inline-block w-2 h-2 rounded-full mr-2" :class="getClientColorBg(client.id)"></span>
+                            <span class="inline-block w-2 h-2 rounded-full mr-2" :class="getColor(client.color, 'bg')"></span>
                             {{ client.name }}
                         </span>
                         <span v-if="getPendingCount(client.id) > 0" class="bg-slate-700 text-blue-300 text-xs px-2 py-0.5 rounded-full">{{ getPendingCount(client.id) }}</span>
@@ -147,10 +147,11 @@
                     <div class="flex items-center space-x-2 overflow-x-auto pb-2 no-scrollbar">
                         <span class="text-xs font-bold text-slate-500 mr-2 uppercase tracking-wider flex-shrink-0">Filter:</span>
                         <button @click="filterPlatform = ''" :class="filterPlatform === '' ? 'bg-slate-700 text-white ring-2 ring-slate-600' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'" class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm border border-slate-700 transition-all flex-shrink-0">全て</button>
-                        <button v-for="pf in platforms" :key="pf" @click="filterPlatform = pf" 
-                            :class="filterPlatform === pf ? 'bg-blue-900/50 text-blue-200 border-blue-700 ring-2 ring-blue-900' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border-slate-700'"
-                            class="px-4 py-1.5 rounded-full text-sm font-medium border shadow-sm transition-all whitespace-nowrap flex-shrink-0">
-                            {{ pf }}
+                        <button v-for="pf in platforms" :key="pf.name" @click="filterPlatform = pf.name" 
+                            :class="filterPlatform === pf.name ? 'bg-blue-900/50 text-blue-200 border-blue-700 ring-2 ring-blue-900' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 border-slate-700'"
+                            class="px-4 py-1.5 rounded-full text-sm font-medium border shadow-sm transition-all whitespace-nowrap flex-shrink-0 flex items-center">
+                            <span class="w-2 h-2 rounded-full mr-2" :class="getColor(pf.color, 'bg')"></span>
+                            {{ pf.name }}
                         </button>
                     </div>
                 </div>
@@ -165,12 +166,12 @@
                         <!-- Grouped Task Card -->
                         <div v-for="taskGroup in groupedFilteredTasks" :key="taskGroup.uniqueKey" class="bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex flex-col group border border-slate-700 overflow-hidden relative">
                             <!-- クライアントカラーバー -->
-                            <div :class="getClientColorBorder(taskGroup.clientId)" class="absolute left-0 top-0 bottom-0 w-1.5"></div>
+                            <div :class="getClientColor(taskGroup.clientId, 'border')" class="absolute left-0 top-0 bottom-0 w-1.5 border-l-4"></div>
                             
                             <div class="p-5 flex-1 pl-6">
                                 <div class="flex justify-between items-start mb-3">
                                     <div v-if="!currentClient" class="text-xs font-bold text-slate-300 flex items-center">
-                                        <span class="w-2 h-2 rounded-full mr-2" :class="getClientColorBg(taskGroup.clientId)"></span>
+                                        <span class="w-2 h-2 rounded-full mr-2" :class="getClientColor(taskGroup.clientId, 'bg')"></span>
                                         {{ getClientName(taskGroup.clientId) }}
                                     </div>
                                     <div v-else class="h-4"></div> <!-- Spacer -->
@@ -229,7 +230,7 @@
                         <!-- Client Columns -->
                         <div v-for="col in boardData" :key="col.client.id" class="w-80 bg-slate-800 rounded-xl border border-slate-700 flex-shrink-0 flex flex-col max-h-full">
                             <!-- Column Header -->
-                            <div class="p-4 border-b border-slate-700 bg-slate-800 rounded-t-xl sticky top-0 z-10 flex justify-between items-center" :class="'border-t-4 ' + getClientColorBorder(col.client.id)">
+                            <div class="p-4 border-b border-slate-700 bg-slate-800 rounded-t-xl sticky top-0 z-10 flex justify-between items-center border-t-4" :class="getColor(col.client.color, 'border')">
                                 <div class="font-bold text-slate-200 truncate pr-2 flex items-center">
                                     <i class="fa-regular fa-building text-slate-500 mr-2 text-sm"></i>
                                     {{ col.client.name }}
@@ -300,7 +301,7 @@
                             <div class="overflow-y-hidden flex-1" ref="ganttSidebar">
                                 <div v-for="row in ganttRows" :key="row.key" class="h-16 flex items-center px-4 border-b border-slate-800 text-sm font-bold text-slate-300 truncate" :title="row.label">
                                     <!-- 分岐: クライアント選択時は媒体色、全表示時はクライアント色 -->
-                                    <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" :class="currentClient ? getPlatformColorDot(row.key) : getClientColorBg(row.clientId)"></span>
+                                    <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" :class="currentClient ? getPlatformColorDot(row.key) : getClientColor(row.clientId, 'bg')"></span>
                                     <span class="truncate">{{ row.label }}</span>
                                 </div>
                             </div>
@@ -392,7 +393,10 @@
                                 <div v-else class="h-40 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
                                     <div v-for="c in clients" :key="c.id" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
                                         <input type="checkbox" :value="c.id" v-model="editingTaskData.targetClientIds" :id="'client-'+c.id" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
-                                        <label :for="'client-'+c.id" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate flex-1">{{ c.name }}</label>
+                                        <label :for="'client-'+c.id" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate flex-1 flex items-center">
+                                            <span class="w-2 h-2 rounded-full mr-2" :class="getColor(c.color, 'bg')"></span>
+                                            {{ c.name }}
+                                        </label>
                                     </div>
                                     <div v-if="clients.length===0" class="text-xs text-slate-500 text-center mt-4">なし</div>
                                 </div>
@@ -405,9 +409,12 @@
                                 
                                 <!-- 編集モード・新規モード共に複数選択可能にする (編集時は再作成のため) -->
                                 <div class="h-40 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
-                                    <div v-for="p in platforms" :key="p" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
-                                        <input type="checkbox" :value="p" v-model="editingTaskData.targetPlatforms" :id="'pf-'+p" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
-                                        <label :for="'pf-'+p" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate flex-1">{{ p }}</label>
+                                    <div v-for="p in platforms" :key="p.name" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
+                                        <input type="checkbox" :value="p.name" v-model="editingTaskData.targetPlatforms" :id="'pf-'+p.name" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
+                                        <label :for="'pf-'+p.name" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate flex-1 flex items-center">
+                                            <span class="w-2 h-2 rounded-full mr-2" :class="getColor(p.color, 'bg')"></span>
+                                            {{ p.name }}
+                                        </label>
                                     </div>
                                     <div v-if="platforms.length===0" class="text-xs text-slate-500 text-center mt-4">なし</div>
                                 </div>
@@ -487,14 +494,24 @@
                             <div v-if="settingsTab === 'clients'">
                                 <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">顧客リスト編集</h4>
                                 <div class="flex space-x-2 mb-6">
-                                    <input type="text" v-model="newClientName" @keyup.enter="addClient" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい顧客名を入力 (例: 株式会社Z社)">
+                                    <!-- Color Picker -->
+                                    <select v-model="newClientColor" class="bg-slate-700 border border-slate-600 rounded-lg px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none text-white w-24">
+                                        <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
+                                    </select>
+                                    <input type="text" v-model="newClientName" @keyup.enter="addClient" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい顧客名を入力">
                                     <button @click="addClient" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
                                         <i class="fa-solid fa-plus"></i> 追加
                                     </button>
                                 </div>
                                 <div class="space-y-2">
-                                    <div v-for="client in clients" :key="client.id" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-3 rounded-lg shadow-sm group hover:border-blue-500 transition border-l-4" :class="getClientColorBorder(client.id)">
-                                        <span class="font-medium text-slate-200">{{ client.name }}</span>
+                                    <div v-for="client in clients" :key="client.id" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-2 rounded-lg shadow-sm group hover:border-blue-500 transition border-l-4" :class="getColor(client.color, 'border')">
+                                        <div class="flex items-center flex-1">
+                                            <!-- Edit Color for existing -->
+                                            <select v-model="client.color" @change="saveData" class="bg-transparent border-none text-xs text-slate-400 focus:ring-0 cursor-pointer mr-2 w-16">
+                                                <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
+                                            </select>
+                                            <span class="font-medium text-slate-200">{{ client.name }}</span>
+                                        </div>
                                         <button @click="removeClient(client.id)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-trash-can"></i>
                                         </button>
@@ -507,15 +524,27 @@
                             <div v-if="settingsTab === 'platforms'">
                                 <h4 class="text-lg font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">広告媒体リスト編集</h4>
                                 <div class="flex space-x-2 mb-6">
-                                    <input type="text" v-model="newPlatformName" @keyup.enter="addPlatform" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい媒体名を入力 (例: SmartNews)">
+                                    <!-- Color Picker -->
+                                    <select v-model="newPlatformColor" class="bg-slate-700 border border-slate-600 rounded-lg px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none text-white w-24">
+                                        <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
+                                    </select>
+                                    <input type="text" v-model="newPlatformName" @keyup.enter="addPlatform" class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-400" placeholder="新しい媒体名を入力">
                                     <button @click="addPlatform" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
                                         <i class="fa-solid fa-plus"></i> 追加
                                     </button>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div v-for="pf in platforms" :key="pf" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-3 rounded-lg shadow-sm group hover:border-blue-500 transition">
-                                        <span class="font-medium text-slate-200 text-sm">{{ pf }}</span>
-                                        <button @click="removePlatform(pf)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
+                                    <div v-for="pf in platforms" :key="pf.name" class="flex justify-between items-center bg-slate-700 border border-slate-600 p-2 rounded-lg shadow-sm group hover:border-blue-500 transition">
+                                        <div class="flex items-center flex-1">
+                                            <span class="w-3 h-3 rounded-full mr-2" :class="getColor(pf.color, 'bg')"></span>
+                                            <div class="flex flex-col">
+                                                <span class="font-medium text-slate-200 text-sm">{{ pf.name }}</span>
+                                                <select v-model="pf.color" @change="saveData" class="bg-transparent border-none text-[10px] text-slate-500 focus:ring-0 cursor-pointer p-0 h-4">
+                                                    <option v-for="(val, key) in COLORS" :value="key">{{ val.label }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button @click="removePlatform(pf.name)" class="text-slate-400 hover:text-red-400 px-2 py-1 rounded hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </div>
@@ -545,70 +574,32 @@
     <script>
         const { createApp } = Vue;
 
-        // カラーパレット定義（クライアント用：border色）
-        const clientBorderColors = [
-            'border-red-500', 'border-orange-500', 'border-amber-500', 
-            'border-yellow-500', 'border-lime-500', 'border-green-500', 
-            'border-emerald-500', 'border-teal-500', 'border-cyan-500', 
-            'border-sky-500', 'border-blue-500', 'border-indigo-500', 
-            'border-violet-500', 'border-purple-500', 'border-fuchsia-500', 
-            'border-pink-500', 'border-rose-500'
-        ];
-        
-        // カラーパレット定義（クライアント用：bg色）
-        const clientBgColors = [
-            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 
-            'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 
-            'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 
-            'bg-sky-500', 'bg-blue-500', 'bg-indigo-500', 
-            'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 
-            'bg-pink-500', 'bg-rose-500'
-        ];
-
-        // カラーパレット定義（プラットフォームタグ用 - 自動割り当て用）
-        const platformTagStyles = [
-            'bg-slate-700 text-slate-300 border-slate-600', // Default fallback
-            'bg-red-900/40 text-red-300 border-red-800',
-            'bg-orange-900/40 text-orange-300 border-orange-800',
-            'bg-amber-900/40 text-amber-300 border-amber-800',
-            'bg-lime-900/40 text-lime-300 border-lime-800',
-            'bg-emerald-900/40 text-emerald-300 border-emerald-800',
-            'bg-teal-900/40 text-teal-300 border-teal-800',
-            'bg-cyan-900/40 text-cyan-300 border-cyan-800',
-            'bg-sky-900/40 text-sky-300 border-sky-800',
-            'bg-blue-900/40 text-blue-300 border-blue-800',
-            'bg-indigo-900/40 text-indigo-300 border-indigo-800',
-            'bg-violet-900/40 text-violet-300 border-violet-800',
-            'bg-purple-900/40 text-purple-300 border-purple-800',
-            'bg-fuchsia-900/40 text-fuchsia-300 border-fuchsia-800',
-            'bg-pink-900/40 text-pink-300 border-pink-800',
-            'bg-rose-900/40 text-rose-300 border-rose-800'
-        ];
-
-        // カラーパレット定義（プラットフォーム単色アイコン用 - 自動割り当て用）
-        const platformDotColors = [
-            'bg-slate-500', // Default fallback
-            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 
-            'bg-lime-500', 'bg-emerald-500', 'bg-teal-500', 
-            'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 
-            'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 
-            'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500'
-        ];
-
-        // 指定された媒体カラーマッピング
-        const platformColorMap = {
-            'Google': { tag: 'bg-green-900/40 text-green-300 border-green-800', dot: 'bg-green-500' },
-            'YSS': { tag: 'bg-red-900/40 text-red-300 border-red-800', dot: 'bg-red-500' },
-            'YDN': { tag: 'bg-red-900/40 text-red-300 border-red-800', dot: 'bg-red-500' },
-            'LINE': { tag: 'bg-lime-900/40 text-lime-300 border-lime-800', dot: 'bg-lime-500' },
-            'meta': { tag: 'bg-blue-900/40 text-blue-300 border-blue-800', dot: 'bg-blue-500' },
-            'TVer': { tag: 'bg-cyan-900/40 text-cyan-300 border-cyan-800', dot: 'bg-cyan-500' }
+        // Enhanced Color Palette
+        const COLORS = {
+            red: { label: '赤', border: 'border-red-500', bg: 'bg-red-500', dot: 'bg-red-500', tag: 'bg-red-900/40 text-red-300 border-red-800' },
+            orange: { label: '橙', border: 'border-orange-500', bg: 'bg-orange-500', dot: 'bg-orange-500', tag: 'bg-orange-900/40 text-orange-300 border-orange-800' },
+            amber: { label: '黄', border: 'border-amber-500', bg: 'bg-amber-500', dot: 'bg-amber-500', tag: 'bg-amber-900/40 text-amber-300 border-amber-800' },
+            lime: { label: '黄緑', border: 'border-lime-500', bg: 'bg-lime-500', dot: 'bg-lime-500', tag: 'bg-lime-900/40 text-lime-300 border-lime-800' },
+            green: { label: '緑', border: 'border-green-500', bg: 'bg-green-500', dot: 'bg-green-500', tag: 'bg-green-900/40 text-green-300 border-green-800' },
+            emerald: { label: '深緑', border: 'border-emerald-500', bg: 'bg-emerald-500', dot: 'bg-emerald-500', tag: 'bg-emerald-900/40 text-emerald-300 border-emerald-800' },
+            teal: { label: '青緑', border: 'border-teal-500', bg: 'bg-teal-500', dot: 'bg-teal-500', tag: 'bg-teal-900/40 text-teal-300 border-teal-800' },
+            cyan: { label: '水色', border: 'border-cyan-500', bg: 'bg-cyan-500', dot: 'bg-cyan-500', tag: 'bg-cyan-900/40 text-cyan-300 border-cyan-800' },
+            blue: { label: '青', border: 'border-blue-500', bg: 'bg-blue-500', dot: 'bg-blue-500', tag: 'bg-blue-900/40 text-blue-300 border-blue-800' },
+            indigo: { label: '藍', border: 'border-indigo-500', bg: 'bg-indigo-500', dot: 'bg-indigo-500', tag: 'bg-indigo-900/40 text-indigo-300 border-indigo-800' },
+            purple: { label: '紫', border: 'border-purple-500', bg: 'bg-purple-500', dot: 'bg-purple-500', tag: 'bg-purple-900/40 text-purple-300 border-purple-800' },
+            fuchsia: { label: '赤紫', border: 'border-fuchsia-500', bg: 'bg-fuchsia-500', dot: 'bg-fuchsia-500', tag: 'bg-fuchsia-900/40 text-fuchsia-300 border-fuchsia-800' },
+            pink: { label: '桃', border: 'border-pink-500', bg: 'bg-pink-500', dot: 'bg-pink-500', tag: 'bg-pink-900/40 text-pink-300 border-pink-800' },
+            rose: { label: '紅', border: 'border-rose-500', bg: 'bg-rose-500', dot: 'bg-rose-500', tag: 'bg-rose-900/40 text-rose-300 border-rose-800' },
+            slate: { label: '灰', border: 'border-slate-500', bg: 'bg-slate-500', dot: 'bg-slate-500', tag: 'bg-slate-700 text-slate-300 border-slate-600' },
         };
 
         createApp({
             data() {
                 return {
-                    // --- State ---
+                    // Constants
+                    COLORS,
+
+                    // State
                     isSidebarOpen: true, 
                     viewMode: 'list', 
                     currentClient: null,
@@ -626,7 +617,10 @@
                     
                     // Input Buffers
                     newClientName: '',
+                    newClientColor: 'blue',
                     newPlatformName: '',
+                    newPlatformColor: 'green',
+
                     editingTaskData: {
                         id: null,
                         clientId: '', 
@@ -643,8 +637,8 @@
                     },
 
                     // Data Stores
-                    platforms: [],
-                    clients: [],
+                    platforms: [], // Now array of objects { name, color }
+                    clients: [],   // Now array of objects { id, name, color }
                     tasks: []
                 }
             },
@@ -713,12 +707,13 @@
                     if (this.currentClient) {
                         return this.platforms.map(pf => {
                             return {
-                                key: pf,
-                                label: pf,
+                                key: pf.name,
+                                label: pf.name,
+                                color: pf.color,
                                 clientId: this.currentClient.id, 
                                 tasks: this.tasks.filter(t => 
                                     t.clientId === this.currentClient.id && 
-                                    t.platform === pf &&
+                                    t.platform === pf.name &&
                                     this.isTaskInCurrentMonth(t)
                                 )
                             };
@@ -729,7 +724,7 @@
                             return {
                                 key: c.id,
                                 label: c.name,
-                                clientId: c.id, 
+                                clientId: c.id, // for color lookup
                                 tasks: this.tasks.filter(t => 
                                     t.clientId === c.id &&
                                     this.isTaskInCurrentMonth(t)
@@ -743,17 +738,47 @@
                 this.loadData();
             },
             methods: {
+                // --- Data Persistance with Migration ---
                 loadData() {
                     const savedData = localStorage.getItem('ad_manager_db_v1');
                     if (savedData) {
                         const db = JSON.parse(savedData);
-                        this.clients = db.clients || [];
-                        this.platforms = db.platforms || [];
+                        
+                        // Migrate Clients (add color if missing)
+                        this.clients = (db.clients || []).map(c => ({
+                            ...c,
+                            color: c.color || this.getRandomColorKey()
+                        }));
+
+                        // Migrate Platforms (string -> object)
+                        this.platforms = (db.platforms || []).map(p => {
+                            if (typeof p === 'string') {
+                                // Default map for migration
+                                const map = {
+                                    'Google': 'green', 'Google広告': 'green',
+                                    'YSS': 'red', 'Yahoo!検索': 'red',
+                                    'YDN': 'red', 'Yahoo!ディスプレイ': 'red',
+                                    'LINE': 'lime', 'LINE広告': 'lime',
+                                    'meta': 'purple', 'Meta広告': 'purple', 'Meta': 'purple',
+                                    'TVer': 'cyan'
+                                };
+                                return { name: p, color: map[p] || this.getRandomColorKey() };
+                            }
+                            return p;
+                        });
+
                         this.tasks = db.tasks || [];
                     } else {
-                        // 初期データを指定のものに変更
-                        this.platforms = ['Google', 'YSS', 'YDN', 'LINE', 'meta', 'TVer'];
-                        this.clients = [{ id: 1, name: 'サンプル株式会社' }];
+                        // Init Data
+                        this.platforms = [
+                            { name: 'Google', color: 'green' },
+                            { name: 'YSS', color: 'red' },
+                            { name: 'YDN', color: 'red' },
+                            { name: 'LINE', color: 'lime' },
+                            { name: 'meta', color: 'purple' }, // Default Purple
+                            { name: 'TVer', color: 'cyan' }
+                        ];
+                        this.clients = [{ id: 1, name: 'サンプル株式会社', color: 'blue' }];
                         this.tasks = [{ id: Date.now(), clientId: 1, platform: 'Google', title: '【例】初期設定', description: '...', date: new Date().toISOString().split('T')[0], status: 'Scheduled', createdAt: new Date().toISOString() }];
                         this.saveData();
                     }
@@ -774,37 +799,29 @@
                 },
 
                 // --- Color Helpers ---
-                stringToColorIndex(str) {
-                    let hash = 0;
-                    if (!str) return 0;
-                    const s = String(str);
-                    for (let i = 0; i < s.length; i++) {
-                        hash = s.charCodeAt(i) + ((hash << 5) - hash);
-                    }
-                    return Math.abs(hash);
+                getRandomColorKey() {
+                    const keys = Object.keys(COLORS);
+                    return keys[Math.floor(Math.random() * keys.length)];
                 },
-                getClientColorBorder(clientId) {
-                    const idx = this.stringToColorIndex(clientId) % clientBorderColors.length;
-                    return clientBorderColors[idx];
+                getColor(colorKey, type) {
+                    // type: 'border', 'bg', 'dot', 'tag'
+                    const c = COLORS[colorKey] || COLORS['slate'];
+                    return c[type];
                 },
-                getClientColorBg(clientId) {
-                    const idx = this.stringToColorIndex(clientId) % clientBgColors.length;
-                    return clientBgColors[idx];
+                getClientColor(clientId, type) {
+                    const client = this.clients.find(c => c.id === clientId);
+                    const colorKey = client ? client.color : 'slate';
+                    return this.getColor(colorKey, type);
                 },
                 getPlatformColorStyle(pfName) {
-                    // 固定マップにあればそれを使用、なければハッシュで自動割り当て
-                    if (platformColorMap[pfName]) {
-                        return platformColorMap[pfName].tag;
-                    }
-                    const idx = this.stringToColorIndex(pfName) % platformTagStyles.length;
-                    return platformTagStyles[idx];
+                    const pf = this.platforms.find(p => p.name === pfName);
+                    const colorKey = pf ? pf.color : 'slate';
+                    return this.getColor(colorKey, 'tag');
                 },
                 getPlatformColorDot(pfName) {
-                    if (platformColorMap[pfName]) {
-                        return platformColorMap[pfName].dot;
-                    }
-                    const idx = this.stringToColorIndex(pfName) % platformDotColors.length;
-                    return platformDotColors[idx];
+                    const pf = this.platforms.find(p => p.name === pfName);
+                    const colorKey = pf ? pf.color : 'slate';
+                    return this.getColor(colorKey, 'dot');
                 },
 
                 // --- Grouping Logic ---
@@ -962,7 +979,8 @@
                 openTaskModal() {
                     this.isEditing = false;
                     const initialTargetClients = this.currentClient ? [this.currentClient.id] : [];
-                    const initialTargetPlatforms = this.platforms.length > 0 ? [this.platforms[0]] : [];
+                    // Use pf.name since platforms is object array
+                    const initialTargetPlatforms = this.platforms.length > 0 ? [this.platforms[0].name] : [];
                     
                     this.editingTaskData = {
                         id: null,
@@ -1103,7 +1121,8 @@
                     if(!this.newClientName.trim()) return;
                     this.clients.push({
                         id: Date.now(),
-                        name: this.newClientName.trim()
+                        name: this.newClientName.trim(),
+                        color: this.newClientColor
                     });
                     this.newClientName = '';
                     this.saveData();
@@ -1119,14 +1138,17 @@
                 },
                 addPlatform() {
                     if(!this.newPlatformName.trim()) return;
-                    if(this.platforms.includes(this.newPlatformName.trim())) return;
-                    this.platforms.push(this.newPlatformName.trim());
+                    if(this.platforms.find(p => p.name === this.newPlatformName.trim())) return;
+                    this.platforms.push({
+                        name: this.newPlatformName.trim(),
+                        color: this.newPlatformColor
+                    });
                     this.newPlatformName = '';
                     this.saveData();
                 },
                 removePlatform(name) {
                     if(confirm(`媒体「${name}」をリストから削除しますか？`)) {
-                        this.platforms = this.platforms.filter(p => p !== name);
+                        this.platforms = this.platforms.filter(p => p.name !== name);
                         this.saveData();
                     }
                 }
