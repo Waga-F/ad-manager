@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v4.1 (Dark)</title>
+    <title>Ad Manager Pro v4.2 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -298,7 +298,7 @@
         <!-- Task Modal (追加・編集兼用) -->
         <transition name="modal">
             <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100 border border-slate-700">
+                <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all scale-100 border border-slate-700">
                     <div class="bg-slate-900 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
                         <h3 class="text-lg font-bold text-white">{{ isEditing ? 'タスク編集' : '新規タスク追加' }}</h3>
                         <button @click="showTaskModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
@@ -309,10 +309,10 @@
                             <i class="fa-solid fa-exclamation-triangle mr-1"></i> まず設定画面からクライアントを登録してください。
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-6">
                             <!-- Client Selection -->
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">クライアント <span class="text-red-400">*</span></label>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">クライアント <span class="text-red-400">*</span></label>
                                 
                                 <!-- 編集モード：単一選択 -->
                                 <div v-if="isEditing">
@@ -322,21 +322,36 @@
                                 </div>
 
                                 <!-- 新規モード：複数選択UI -->
-                                <div v-else class="h-32 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
-                                    <div v-for="c in clients" :key="c.id" class="flex items-center mb-1 last:mb-0">
+                                <div v-else class="h-40 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
+                                    <div v-for="c in clients" :key="c.id" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
                                         <input type="checkbox" :value="c.id" v-model="editingTaskData.targetClientIds" :id="'client-'+c.id" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
-                                        <label :for="'client-'+c.id" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate">{{ c.name }}</label>
+                                        <label :for="'client-'+c.id" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate flex-1">{{ c.name }}</label>
                                     </div>
                                     <div v-if="clients.length===0" class="text-xs text-slate-500 text-center mt-4">なし</div>
                                 </div>
-                                <p v-if="!isEditing" class="text-[10px] text-slate-400 mt-1">※複数の顧客に一括登録できます</p>
+                                <p v-if="!isEditing" class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-check-double mr-1"></i>複数選択で一括作成されます</p>
                             </div>
 
+                            <!-- Platform Selection -->
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">媒体 <span class="text-red-400">*</span></label>
-                                <select v-model="editingTaskData.platform" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
-                                    <option v-for="p in platforms" :value="p">{{ p }}</option>
-                                </select>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">媒体 <span class="text-red-400">*</span></label>
+                                
+                                <!-- 編集モード：単一選択 -->
+                                <div v-if="isEditing">
+                                    <select v-model="editingTaskData.platform" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
+                                        <option v-for="p in platforms" :value="p">{{ p }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- 新規モード：複数選択UI -->
+                                <div v-else class="h-40 overflow-y-auto bg-slate-700 border border-slate-600 rounded-lg p-2">
+                                    <div v-for="p in platforms" :key="p" class="flex items-center mb-1 last:mb-0 hover:bg-slate-600 p-1 rounded">
+                                        <input type="checkbox" :value="p" v-model="editingTaskData.targetPlatforms" :id="'pf-'+p" class="w-4 h-4 text-blue-600 bg-slate-600 border-slate-500 rounded focus:ring-blue-500 ring-offset-slate-800">
+                                        <label :for="'pf-'+p" class="ml-2 text-sm text-slate-200 cursor-pointer select-none truncate flex-1">{{ p }}</label>
+                                    </div>
+                                    <div v-if="platforms.length===0" class="text-xs text-slate-500 text-center mt-4">なし</div>
+                                </div>
+                                <p v-if="!isEditing" class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-check-double mr-1"></i>(クライアント数) × (媒体数) のタスクが作成されます</p>
                             </div>
                         </div>
 
@@ -374,7 +389,7 @@
                     <div class="px-6 py-4 bg-slate-900 flex justify-end space-x-3 border-t border-slate-800">
                         <button @click="showTaskModal = false" class="px-5 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 text-sm font-medium transition">キャンセル</button>
                         <button @click="saveTask" :disabled="clients.length === 0" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 text-sm font-bold shadow-lg shadow-blue-900/50 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            {{ isEditing ? '更新する' : (editingTaskData.targetClientIds.length > 1 ? editingTaskData.targetClientIds.length + '件を一括登録' : '追加する') }}
+                            {{ isEditing ? '更新する' : ( (editingTaskData.targetClientIds.length * editingTaskData.targetPlatforms.length) > 1 ? (editingTaskData.targetClientIds.length * editingTaskData.targetPlatforms.length) + '件を一括登録' : '追加する') }}
                         </button>
                     </div>
                 </div>
@@ -494,7 +509,8 @@
                         id: null,
                         clientId: '', // For editing mode (single)
                         targetClientIds: [], // For create mode (multiple)
-                        platform: '',
+                        platform: '', // For editing mode (single)
+                        targetPlatforms: [], // For create mode (multiple)
                         title: '',
                         description: '',
                         date: '',
@@ -716,14 +732,18 @@
                 // --- Task Management ---
                 openTaskModal() {
                     this.isEditing = false;
-                    // デフォルトで現在表示中のクライアントを選択状態に。なければ空。
-                    const initialTarget = this.currentClient ? [this.currentClient.id] : [];
+                    // デフォルトで現在表示中のクライアントを選択状態に
+                    const initialTargetClients = this.currentClient ? [this.currentClient.id] : [];
+                    
+                    // デフォルトで最初のプラットフォームを選択候補に（必須バリデーション対策）
+                    const initialTargetPlatforms = this.platforms.length > 0 ? [this.platforms[0]] : [];
                     
                     this.editingTaskData = {
                         id: null,
                         clientId: '', 
-                        targetClientIds: initialTarget, // Multi Select Init
-                        platform: this.platforms.length > 0 ? this.platforms[0] : '',
+                        targetClientIds: initialTargetClients, // Multi Select Clients
+                        platform: '',
+                        targetPlatforms: initialTargetPlatforms, // Multi Select Platforms
                         title: '',
                         description: '',
                         date: new Date().toISOString().split('T')[0],
@@ -738,7 +758,8 @@
                     const data = JSON.parse(JSON.stringify(task));
                     this.editingTaskData = {
                         ...data,
-                        targetClientIds: [data.clientId] // 編集時は自身のクライアントIDのみ
+                        targetClientIds: [data.clientId], // 編集時は自身のIDのみ
+                        targetPlatforms: [data.platform]  // 編集時は自身のPFのみ
                     };
                     this.showTaskModal = true;
                 },
@@ -746,13 +767,15 @@
                     this.isEditing = false;
                     const data = JSON.parse(JSON.stringify(task));
                     
-                    // コピー作成。IDはnull、clientIdはコピー元を引き継ぎつつ複数選択配列にも入れる
+                    // コピー作成。IDはnull
+                    // クライアントとPFはコピー元を初期選択状態にする
                     this.editingTaskData = {
                         ...data,
                         id: null,
                         title: data.title + ' (コピー)',
                         status: 'Scheduled',
-                        targetClientIds: [data.clientId] 
+                        targetClientIds: [data.clientId],
+                        targetPlatforms: [data.platform]
                     };
                     this.showTaskModal = true;
                 },
@@ -767,33 +790,44 @@
                     if (this.isEditing) {
                         // === 更新モード (単一タスク) ===
                         if(!this.editingTaskData.clientId) { alert('クライアントを選択してください'); return; }
+                        if(!this.editingTaskData.platform) { alert('媒体を選択してください'); return; }
                         
                         const index = this.tasks.findIndex(t => t.id === this.editingTaskData.id);
                         if(index !== -1) {
-                            // targetClientIds等は保存不要なので除去してマージ
-                            const { targetClientIds, ...taskData } = this.editingTaskData;
+                            // targetArrays等は保存不要なので除去してマージ
+                            const { targetClientIds, targetPlatforms, ...taskData } = this.editingTaskData;
                             this.tasks[index] = taskData;
                         }
                     } else {
-                        // === 新規作成モード (複数クライアント一括登録) ===
+                        // === 新規作成モード (複数クライアント × 複数媒体 一括登録) ===
                         if(this.editingTaskData.targetClientIds.length === 0) {
                             alert('クライアントを1つ以上選択してください');
                             return;
                         }
+                        if(this.editingTaskData.targetPlatforms.length === 0) {
+                            alert('媒体を1つ以上選択してください');
+                            return;
+                        }
 
-                        // 選択されたクライアントごとにタスク生成
+                        // ベースデータ作成
                         const baseData = { ...this.editingTaskData };
-                        delete baseData.targetClientIds; // 不要プロパティ削除
+                        delete baseData.targetClientIds; 
+                        delete baseData.targetPlatforms;
                         delete baseData.id;
+                        delete baseData.clientId; // 個別IDで上書きするため削除
+                        delete baseData.platform; // 個別PFで上書きするため削除
 
+                        // 選択された [クライアント] × [媒体] の組み合わせでタスク生成
                         this.editingTaskData.targetClientIds.forEach(clientId => {
-                            const newTask = {
-                                ...baseData,
-                                id: Date.now() + Math.random(), // Unique ID generation
-                                clientId: clientId,
-                                // status is already in baseData
-                            };
-                            this.tasks.push(newTask);
+                            this.editingTaskData.targetPlatforms.forEach(platform => {
+                                const newTask = {
+                                    ...baseData,
+                                    id: Date.now() + Math.random(), // Unique ID generation
+                                    clientId: clientId,
+                                    platform: platform
+                                };
+                                this.tasks.push(newTask);
+                            });
                         });
                     }
 
