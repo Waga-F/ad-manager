@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Manager Pro v4.2 (Dark)</title>
+    <title>Ad Manager Pro v4.3 (Dark)</title>
     <!-- Tailwind CSS (Design) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Logic) -->
@@ -177,9 +177,19 @@
                             <div class="p-5 flex-1 pl-6">
                                 <div class="flex justify-between items-start mb-3">
                                     <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded bg-slate-700 text-slate-300 border border-slate-600">{{ task.platform }}</span>
-                                    <span :class="task.status === 'Done' ? 'text-emerald-400 bg-emerald-900/30 border-emerald-800' : 'text-amber-400 bg-amber-900/30 border-amber-800'" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center border">
-                                        <i :class="task.status === 'Done' ? 'fa-solid fa-check mr-1' : 'fa-solid fa-hourglass-half mr-1'"></i> 
-                                        {{ task.status === 'Done' ? '完了' : '予定' }}
+                                    
+                                    <!-- Status Badge -->
+                                    <span :class="{
+                                        'text-emerald-400 bg-emerald-900/30 border-emerald-800': task.status === 'Done',
+                                        'text-blue-400 bg-blue-900/30 border-blue-800': task.status === 'Live',
+                                        'text-amber-400 bg-amber-900/30 border-amber-800': task.status === 'Scheduled'
+                                    }" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center border">
+                                        <i :class="{
+                                            'fa-solid fa-check': task.status === 'Done',
+                                            'fa-solid fa-play': task.status === 'Live',
+                                            'fa-solid fa-hourglass-half': task.status === 'Scheduled'
+                                        }" class="mr-1"></i> 
+                                        {{ task.status === 'Done' ? '完了' : (task.status === 'Live' ? '掲載中' : '予定') }}
                                     </span>
                                 </div>
                                 <div v-if="!currentClient" class="text-xs text-slate-400 mb-1 font-bold flex items-center">
@@ -225,6 +235,7 @@
                         </div>
                         <div class="flex items-center space-x-4 text-xs text-slate-500">
                              <div class="flex items-center"><span class="w-3 h-3 bg-amber-500 rounded-sm mr-1"></span> 予定</div>
+                             <div class="flex items-center"><span class="w-3 h-3 bg-blue-500 rounded-sm mr-1"></span> 掲載中</div>
                              <div class="flex items-center"><span class="w-3 h-3 bg-emerald-500 rounded-sm mr-1"></span> 完了</div>
                         </div>
                     </div>
@@ -269,7 +280,8 @@
                                          @click="editTask(task)"
                                          :style="getTaskStyle(task)"
                                          :class="[
-                                            task.status === 'Done' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-400' : 'bg-amber-600 hover:bg-amber-500 border-amber-400',
+                                            task.status === 'Done' ? 'bg-emerald-600 hover:bg-emerald-500 border-emerald-400' : 
+                                            (task.status === 'Live' ? 'bg-blue-600 hover:bg-blue-500 border-blue-400' : 'bg-amber-600 hover:bg-amber-500 border-amber-400'),
                                             getTaskStyle(task).isPoint ? 'rounded-full' : 'rounded-md'
                                          ]"
                                          class="absolute h-8 top-4 shadow-lg cursor-pointer transition-all z-10 flex items-center justify-center group overflow-hidden border text-white text-xs font-bold px-2 whitespace-nowrap">
@@ -280,7 +292,7 @@
 
                                         <!-- Tooltip -->
                                         <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-slate-950 text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-xl border border-slate-700">
-                                            {{ task.title }} ({{ formatDateRange(task) }}) - {{ task.status === 'Done' ? '完了' : '予定' }}
+                                            {{ task.title }} ({{ formatDateRange(task) }}) - {{ task.status === 'Done' ? '完了' : (task.status === 'Live' ? '掲載中' : '予定') }}
                                         </div>
                                     </div>
                                 </div>
@@ -381,6 +393,7 @@
                             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">ステータス</label>
                             <select v-model="editingTaskData.status" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-white">
                                 <option value="Scheduled">Scheduled (予定)</option>
+                                <option value="Live">Live (掲載中)</option>
                                 <option value="Done">Done (完了)</option>
                             </select>
                         </div>
@@ -835,7 +848,12 @@
                     this.showTaskModal = false;
                 },
                 toggleStatus(task) {
-                    task.status = task.status === 'Scheduled' ? 'Done' : 'Scheduled';
+                    const map = {
+                        'Scheduled': 'Live',
+                        'Live': 'Done',
+                        'Done': 'Scheduled'
+                    };
+                    task.status = map[task.status] || 'Scheduled';
                     this.saveData();
                 },
                 deleteTask(id) {
